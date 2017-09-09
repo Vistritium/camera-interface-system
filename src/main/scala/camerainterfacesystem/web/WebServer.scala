@@ -1,5 +1,6 @@
 package camerainterfacesystem.web
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
@@ -12,8 +13,12 @@ import scala.collection.JavaConverters._
 
 class WebServer extends AppActor {
 
-  private implicit val system = context.system
-  private implicit val materializer = ActorMaterializer()(system)
+  private implicit val system: ActorSystem = context.system
+  private implicit val materializer: ActorMaterializer = {
+    val mat = ActorMaterializer()(context)
+    WebServer.webMaterializer = mat
+    mat
+  }
 
   private val controllers: List[AppController] = {
     val reflections = new Reflections(new ConfigurationBuilder()
@@ -33,6 +38,10 @@ class WebServer extends AppActor {
     case _ =>
   }
 
+}
+
+object WebServer {
+  var webMaterializer: ActorMaterializer = _
 }
 
 
