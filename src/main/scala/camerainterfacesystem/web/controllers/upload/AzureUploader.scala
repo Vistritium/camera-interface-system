@@ -23,5 +23,6 @@ object AzureUploader {
     blob.upload(inputStream, length)
   }
 
+  def init(){}
 
 }
