@@ -31,9 +31,10 @@ javaOptions in Universal ++= Seq(
 )
 
 enablePlugins(SbtTwirl)
-
+enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 dockerRepository := Some("nowicki.azurecr.io")
 dockerUsername := Some("nowicki")
 dockerExposedPorts := Seq(8080)
 dockerExposedVolumes := Seq("/data")
+dockerUpdateLatest := true

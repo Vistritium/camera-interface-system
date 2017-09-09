@@ -32,7 +32,7 @@ class WebServer extends AppActor {
   require(controllers.nonEmpty)
   private val route = controllers.map(_.route).reduce(_ ~ _)
 
-  private val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", 8080)
 
   override def receive = {
     case _ =>
