@@ -3,6 +3,7 @@ package camerainterfacesystem.web.controllers.upload
 import java.util
 
 import akka.actor.ActorRef
+import org.apache.commons.io.IOUtils
 import org.synchronoss.cloud.nio.multipart.NioMultipartParserListener
 import org.synchronoss.cloud.nio.stream.storage.StreamStorage
 
@@ -11,7 +12,7 @@ class NioMultipartParserListenerAdapter(ref: ActorRef) extends NioMultipartParse
     ref ! OnError(message, cause)
 
   override def onPartFinished(partBodyStreamStorage: StreamStorage, headersFromPart: util.Map[String, util.List[String]]): Unit =
-    ref ! OnPartFinished(partBodyStreamStorage, headersFromPart)
+    ref ! OnPartFinished(IOUtils.toByteArray(partBodyStreamStorage.getInputStream), headersFromPart)
 
   override def onAllPartsFinished(): Unit = ref ! OnAllPartsFinished
 

@@ -1,7 +1,8 @@
 CREATE TABLE presets (
-  id          INTEGER PRIMARY KEY,
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
   name        VARCHAR NOT NULL,
-  displayName TEXT    NOT NULL
+  displayName TEXT    NULL,
+  CONSTRAINT name_is_unique UNIQUE (name)
 );
 
 CREATE TABLE images (
@@ -10,5 +11,7 @@ CREATE TABLE images (
   filename   VARCHAR  NOT NULL,
   photoTaken DATETIME NOT NULL,
   presetId   INTEGER  NOT NULL,
-  FOREIGN KEY (presetId) REFERENCES presets (id)
+  hourTaken  INTEGER  NOT NULL,
+  FOREIGN KEY (presetId) REFERENCES presets (id),
+  CONSTRAINT fullpath_is_unique UNIQUE (fullpath)
 );

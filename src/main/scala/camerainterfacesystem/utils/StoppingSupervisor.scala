@@ -1,4 +1,4 @@
-package util
+package camerainterfacesystem.utils
 
 import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{AllForOneStrategy, Props, SupervisorStrategy, Terminated}
@@ -28,4 +28,9 @@ class StoppingSupervisor(props: Props) extends AppActor {
     }
   }
 
+}
+
+object StoppingSupervisor {
+
+  def apply(child: Props) = Props(classOf[StoppingSupervisor], child)
 }
