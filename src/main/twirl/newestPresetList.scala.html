@@ -1,5 +1,5 @@
 @import camerainterfacesystem.db.Tables.Image
 @(images: Seq[Image])
 @main(List()) {
-    @imageSeries(images.map(x => x.fullpath -> Some(s"/preset/${x.presetid}/20")))
+    @imageSeries(images.map(x => x.fullpath -> None))
 }

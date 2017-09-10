@@ -1,0 +1,10 @@
+@(fullNames: Seq[(String, Option[String])])
+@for(image <- fullNames) {
+    @if(image._2.isDefined) {
+        <a href="@(image._2.get)">}
+
+
+    <img src="/images/download/@(image._1)" >
+    @if(image._2.isDefined) {</a>}
+
+}
