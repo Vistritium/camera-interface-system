@@ -1,0 +1,9 @@
+@import camerainterfacesystem.db.Tables.Image
+@(images: Seq[Image])
+@main(List()) {
+    <div>
+    @for(image <- images) {
+        <img src="/images/download/@(image.fullpath)">
+        }
+    </div>
+}

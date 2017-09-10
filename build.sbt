@@ -28,6 +28,8 @@ libraryDependencies += "com.microsoft.azure" % "azure-storage" % "5.5.0"
 libraryDependencies += "com.typesafe.slick" %% "slick" % "3.2.1"
 libraryDependencies += "com.typesafe.slick" %% "slick-codegen" % "3.2.1"
 libraryDependencies += "org.apache.commons" % "commons-imaging" % "1.0-R1534292"
+libraryDependencies += "com.github.ben-manes.caffeine" % "caffeine" % "2.5.5"
+libraryDependencies += "com.github.blemale" %% "scaffeine" % "2.2.0"
 
 javaOptions in Universal ++= Seq(
   "-J-Xmx512m",

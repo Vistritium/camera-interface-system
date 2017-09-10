@@ -4,7 +4,7 @@ import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.{DB, Tables}
 import slick.jdbc.SQLiteProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object ImagesRepository extends SlickRepository {
 
@@ -40,6 +40,24 @@ object ImagesRepository extends SlickRepository {
       .take(limit)
 
     DB().run(query.result)
+  }
+
+  def getNewestImagesForAllPresets(): Future[Vector[(Image, Preset)]] = {
+
+    val sql =
+      sql"""SELECT i1.*, presets.*
+    FROM images i1
+    LEFT JOIN images i2 ON i1.presetId == i2.presetId AND i1.photoTaken < i2.photoTaken
+    LEFT JOIN presets ON i1.presetId == presets.id
+    WHERE i2.presetId IS NULL""".as[(Image, Preset)]
+
+    DB().run(sql)
+  }
+
+  def main(args: Array[String]): Unit = {
+    import scala.concurrent.duration._
+    val tuples = Await.result(getNewestImagesForAllPresets(), 10 seconds)
+    println(tuples.mkString("\n"))
   }
 
 }

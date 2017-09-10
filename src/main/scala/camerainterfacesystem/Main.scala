@@ -1,21 +1,21 @@
 package camerainterfacesystem
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
+import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.db.DB
+import camerainterfacesystem.services.ImageDataService
 import camerainterfacesystem.web.WebServer
-import camerainterfacesystem.web.controllers.upload.AzureUploader
 import com.typesafe.scalalogging.LazyLogging
 
-object Main extends LazyLogging{
+object Main extends LazyLogging {
+
+  val system = ActorSystem()
+  Azure.init()
+
+  val web: ActorRef = system.actorOf(Props[WebServer], "web")
+  val imageDataService: ActorRef = system.actorOf(Props[ImageDataService], "imagedataservice")
 
   def main(args: Array[String]): Unit = {
-
-    AzureUploader.init()
-
-    val system = ActorSystem()
-
-    system.actorOf(Props[WebServer], "web")
-
     logger.info(s"flyway migration: ${DB.migration}")
 
   }

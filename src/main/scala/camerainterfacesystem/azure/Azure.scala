@@ -1,13 +1,13 @@
-package camerainterfacesystem.web.controllers.upload
+package camerainterfacesystem.azure
 
-import java.io.{InputStream, OutputStream, PipedInputStream}
+import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 
 import camerainterfacesystem.Config
 import com.microsoft.azure.storage.CloudStorageAccount
 import org.apache.commons.io.IOUtils
 
 
-object AzureUploader {
+object Azure {
 
   private val config = Config().getConfig("azure")
   private val connectionString = config.getString("blobConnectionString")
@@ -23,6 +23,18 @@ object AzureUploader {
     blob.upload(inputStream, length)
   }
 
-  def init(){}
+  def download(path: String, outputStream: OutputStream): Unit = {
+    val blob = container.getBlobReferenceFromServer(path)
+    blob.download(outputStream)
+  }
+
+  def download(path: String): Array[Byte] = {
+    val blob = container.getBlobReferenceFromServer(path)
+    val outputStream = new ByteArrayOutputStream(50000)
+    blob.download(outputStream)
+    outputStream.toByteArray
+  }
+
+  def init() {}
 
 }

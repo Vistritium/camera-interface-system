@@ -6,6 +6,7 @@ import java.util
 import java.util.{Objects, UUID}
 
 import camerainterfacesystem.AppActor
+import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.db.DB
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
@@ -63,7 +64,7 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
             preset <- PresetsRepository.findPresetByNameOrCreateNew(props.presetName)
             image <- ImagesRepository.addImage(Image(0, props.fullpath, props.filename, offsetZoneTime.toInstant,
               preset.id, props.hourTaken))
-          } yield AzureUploader.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+          } yield Azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
 
           future.onComplete {
             case Failure(exception) => {

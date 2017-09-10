@@ -4,18 +4,19 @@ import java.sql.Timestamp
 import java.time.Instant
 
 import slick.ast.BaseTypedType
-import slick.jdbc.JdbcType
+import slick.jdbc.{GetResult, JdbcType}
 import slick.jdbc.SQLiteProfile.api._
 import slick.model.ForeignKeyAction
 
 object Tables {
 
+  implicit def timestampToInstant(timestamp: Timestamp): Instant = if (timestamp == null) null else Instant.ofEpochMilli(timestamp.getTime)
+
   implicit val instantColumnType: JdbcType[Instant] with BaseTypedType[Instant] = MappedColumnType.base[Instant, Timestamp](
     { instant =>
       if (instant == null) null else new Timestamp(instant.toEpochMilli)
-    }, { timestamp =>
-      if (timestamp == null) null else Instant.ofEpochMilli(timestamp.getTime)
-    }
+    },
+    timestampToInstant
   )
 
   case class Image(id: Int, fullpath: String, filename: String, phototaken: Instant, presetid: Int, hourTaken: Int)
@@ -35,6 +36,8 @@ object Tables {
     lazy val presetsFk = foreignKey("presets_FK_1", Rep.Some(presetid), Presets)(r => r.id, onUpdate = ForeignKeyAction.NoAction, onDelete = ForeignKeyAction.NoAction)
   }
 
+  implicit val getImageResult: GetResult[Image] = GetResult(r => Image(r.<<, r.<<, r.<<, r.nextTimestamp(), r.<<, r.<<))
+
   lazy val Images = new TableQuery(tag => new Images(tag))
 
 
@@ -49,6 +52,8 @@ object Tables {
     val name: Rep[String] = column[String]("name")
     val displayname: Rep[Option[String]] = column[Option[String]]("displayName")
   }
+
+  implicit val getPresetResult: GetResult[Preset] = GetResult(r => Preset(r.<<, r.<<, r.<<))
 
   lazy val Presets = new TableQuery(tag => new Presets(tag))
 
