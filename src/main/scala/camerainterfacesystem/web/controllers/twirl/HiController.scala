@@ -22,7 +22,8 @@ class HiController extends AppController {
       (segmentId, limit) => {
         handleFutureError(onComplete(ImagesService.getNewestForPreset(segmentId, limit))) {
           newestForPreset => {
-            htmlToResponseMarshalable(imageSeries(newestForPreset.map(x => x._1.fullpath -> None)))
+            val images = newestForPreset.map(_._1).sortWith((l, r) => l.phototaken.isAfter(r.phototaken))
+            htmlToResponseMarshalable(imageSeries(images.map(x => x.fullpath -> None)))
           }
         }
       }
