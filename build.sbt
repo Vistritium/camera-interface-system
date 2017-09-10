@@ -37,6 +37,8 @@ javaOptions in Universal ++= Seq(
   "-Ddatabase=/data"
 )
 
+mainClass in Compile := Some("camerainterfacesystem.Main")
+
 enablePlugins(SbtTwirl)
 
 enablePlugins(JavaAppPackaging)
