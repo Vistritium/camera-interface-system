@@ -36,7 +36,7 @@ object ImagesRepository extends SlickRepository {
     require(limit >= 1, s"limit must be bigger or equals to 1: ${limit}")
     val query = imageJoinPreset
       .filter(_._2.id === presetId)
-      .sortBy(_._1.phototaken)
+      .sortBy(_._1.phototaken.desc)
       .take(limit)
 
     DB().run(query.result)
