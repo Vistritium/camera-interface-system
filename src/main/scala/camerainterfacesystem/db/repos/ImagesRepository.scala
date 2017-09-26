@@ -42,6 +42,22 @@ object ImagesRepository extends SlickRepository {
     DB().run(query.result)
   }
 
+  def deleteImage(idOrFullpath: Either[Int, String])(implicit executionContext: ExecutionContext): Future[Unit] = {
+    val query = (idOrFullpath match {
+      case Left(id) => images.filter(_.id === id)
+      case Right(value) => images.filter(_.fullpath === value)
+    }).delete
+    DB().run(query).map(_ => Unit)
+  }
+
+  def getImage(idOrFullpath: Either[Int, String]): Future[Option[Image]] = {
+    val query = (idOrFullpath match {
+      case Left(id) => images.filter(_.id === id)
+      case Right(value) => images.filter(_.fullpath === value)
+    }).result.headOption
+    DB().run(query)
+  }
+
   def getNewestImagesForAllPresets(): Future[Vector[(Image, Preset)]] = {
 
     val sql =

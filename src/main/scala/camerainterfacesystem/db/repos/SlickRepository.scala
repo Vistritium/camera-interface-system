@@ -8,5 +8,4 @@ class SlickRepository extends LazyLogging {
 
   protected implicit val slick: SQLiteProfile.backend.DatabaseDef = DB()
   protected implicit val instantColumnType = Tables.instantColumnType
-
 }

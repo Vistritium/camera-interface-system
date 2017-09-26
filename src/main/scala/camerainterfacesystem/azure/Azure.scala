@@ -35,6 +35,11 @@ object Azure {
     outputStream.toByteArray
   }
 
+  def deleteBlob(path: String): Unit = {
+    val blob = container.getAppendBlobReference(path)
+    blob.delete()
+  }
+
   def init() {}
 
 }

@@ -36,6 +36,11 @@ class ImagesController extends AppController {
             complete(HttpResponse(entity = HttpEntity(ContentType(MediaType.image("jpeg", Compressible, ".jpg")), data.bytes)))
         }
       }
+    } ~ delete {
+      path(IntNumber) {
+        id =>
+          complete(id.toString)
+      }
     }
   }
 }

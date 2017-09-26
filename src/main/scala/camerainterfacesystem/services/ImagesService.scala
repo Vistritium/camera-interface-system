@@ -2,6 +2,7 @@ package camerainterfacesystem.services
 
 import akka.pattern.ask
 import camerainterfacesystem.Main
+import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.repos.ImagesRepository
 
@@ -21,6 +22,18 @@ object ImagesService extends AppService {
       images <- ImagesRepository.getNewestImagesForPreset(presetId, limit)
       withBytes <- getBytes(images)
     } yield withBytes
+  }
+
+  def deleteImage(idOrFullpath: Either[Int, String]): Future[Boolean] = {
+    //noinspection UnitInMap
+    for {
+      maybeImage <- ImagesRepository.getImage(idOrFullpath)
+      deletedFromDB = maybeImage.map(image => {
+        ImagesRepository.deleteImage(Left(image.id))
+        image
+      })
+      deletedFromCloud = deletedFromDB.map(image => Azure.deleteBlob(image.fullpath))
+    } yield deletedFromCloud.isDefined
   }
 
   private def getBytes(images: Seq[(Image, Preset)]) = {
