@@ -2,6 +2,7 @@ package camerainterfacesystem.db.repos
 
 import camerainterfacesystem.db.{DB, Tables}
 import camerainterfacesystem.db.Tables.{Image, Preset}
+import camerainterfacesystem.db.util.Count
 import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
@@ -35,6 +36,16 @@ object PresetsRepository extends SlickRepository {
 
     val eventualResult: Future[Preset] = DB().run(query)
     eventualResult
+  }
+
+  def getAllPresets()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count)]] = {
+    DB().run {
+      sql"""
+            SELECT presets.*, COUNT(images.id) FROM presets
+            LEFT JOIN images ON presets.id = images.presetId
+            GROUP BY presets.id
+        """.as[(Preset, Int)]
+    }.map(x => x.map(r => r._1 -> Count(r._2)))
   }
 
 
