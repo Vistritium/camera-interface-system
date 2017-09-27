@@ -2,7 +2,7 @@ package camerainterfacesystem.db.repos
 
 import camerainterfacesystem.db.{DB, Tables}
 import camerainterfacesystem.db.Tables.{Image, Preset}
-import camerainterfacesystem.db.util.{Count, Hour}
+import camerainterfacesystem.db.util.{Count, Hour, PresetId}
 import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
@@ -27,6 +27,9 @@ object PresetsRepository extends SlickRepository {
     val query = presets.filter(_.name === name)
     DB().run(query.result.headOption)
   }
+
+  def getPresetById(id: PresetId): Future[Option[Preset]] =
+    DB().run(presets.filter(_.id === id.presetId).result.headOption)
 
   def findPresetByNameOrCreateNew(name: String)(implicit executionContext: ExecutionContext): Future[Preset] = {
     val query = presets.filter(_.name === name).result.headOption.flatMap {

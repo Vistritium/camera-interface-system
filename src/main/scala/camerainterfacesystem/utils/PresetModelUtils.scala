@@ -16,4 +16,13 @@ object PresetModelUtils {
     )
   }
 
+  def hourCurrentToGTM(hour: Hour): Hour = {
+    Hour(
+      ZonedDateTime.now(Config.userZone)
+        .withHour(hour.hour)
+        .withZoneSameInstant(ZoneOffset.UTC)
+        .getHour
+    )
+  }
+
 }

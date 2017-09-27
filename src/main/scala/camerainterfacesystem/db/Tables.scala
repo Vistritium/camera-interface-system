@@ -41,7 +41,12 @@ object Tables {
   lazy val Images = new TableQuery(tag => new Images(tag))
 
 
-  case class Preset(id: Int, name: String, displayname: Option[String])
+  case class Preset(id: Int, name: String, displayname: Option[String]) {
+    def normalizeName: Preset = displayname match {
+      case Some(_) => this
+      case None => this.copy(displayname = Some(name))
+    }
+  }
 
   class Presets(_tableTag: Tag) extends Table[Preset](_tableTag, "presets") {
     def * = (id, name, displayname) <> (Preset.tupled, Preset.unapply)

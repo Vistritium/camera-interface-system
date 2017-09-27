@@ -7,13 +7,14 @@ scalaVersion := "2.12.3"
 resolvers += "Adobe" at "https://repo.adobe.com/nexus/content/repositories/public/"
 resolvers += Resolver.bintrayRepo("hseeberger", "maven")
 
-libraryDependencies ++= Seq (
+libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.1",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "org.apache.httpcomponents" % "httpclient" % "4.5.3",
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.9.0",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.0",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.0",
+  "com.fasterxml.jackson.core" % "jackson-core" % "2.9.1",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.1",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.1",
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.1",
   "com.typesafe.akka" %% "akka-actor" % "2.5.4",
   "com.typesafe.akka" %% "akka-stream" % "2.5.4",
   "com.typesafe.akka" %% "akka-http" % "10.0.10",

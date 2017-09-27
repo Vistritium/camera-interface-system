@@ -5,6 +5,7 @@ import java.time.ZoneId
 import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.{DefaultScalaModule, ScalaModule}
 import com.typesafe.config.{Config, ConfigFactory}
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 
 object Config {
 
@@ -15,6 +16,8 @@ object Config {
   val objectMapper: ObjectMapper = {
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
+    mapper.registerModule(new JavaTimeModule())
+    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     mapper.enable(SerializationFeature.INDENT_OUTPUT)
     mapper
   }

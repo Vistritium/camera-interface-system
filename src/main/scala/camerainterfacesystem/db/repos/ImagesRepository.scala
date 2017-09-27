@@ -1,6 +1,9 @@
 package camerainterfacesystem.db.repos
 
+import java.time.Instant
+
 import camerainterfacesystem.db.Tables.{Image, Preset}
+import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.db.{DB, Tables}
 import slick.jdbc.SQLiteProfile.api._
 
@@ -68,6 +71,32 @@ object ImagesRepository extends SlickRepository {
     WHERE i2.presetId IS NULL""".as[(Image, Preset)]
 
     DB().run(sql)
+  }
+
+  def getImagesForPresetAndHour(presetId: PresetId, hour: Hour,
+                                min: Option[Instant] = None,
+                                max: Option[Instant] = None)
+                               (implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
+    PresetsRepository.getPresetById(presetId).flatMap {
+      case None => throw new IllegalStateException("Unknown preset id")
+      case Some(value) => {
+        var query = imageJoinPreset
+          .filter(x => x._2.id === presetId.presetId && x._1.hourTaken === hour.hour)
+          .map(_._1)
+        query = min match {
+          case Some(min) => query.filter(_.phototaken >= min)
+          case None =>  query
+        }
+        query = max match {
+          case Some(max) =>  query.filter(_.phototaken <= max)
+          case None => query
+        }
+        DB().run(query
+          .result).map {
+          value -> _
+        }
+      }
+    }
   }
 
   def main(args: Array[String]): Unit = {
