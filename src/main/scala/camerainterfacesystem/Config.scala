@@ -1,5 +1,7 @@
 package camerainterfacesystem
 
+import java.time.ZoneId
+
 import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.{DefaultScalaModule, ScalaModule}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -16,4 +18,6 @@ object Config {
     mapper.enable(SerializationFeature.INDENT_OUTPUT)
     mapper
   }
+
+  val userZone: ZoneId = ZoneId.of(config.getString("userTimezone"))
 }

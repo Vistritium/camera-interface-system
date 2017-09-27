@@ -2,7 +2,7 @@ package camerainterfacesystem.db.repos
 
 import camerainterfacesystem.db.{DB, Tables}
 import camerainterfacesystem.db.Tables.{Image, Preset}
-import camerainterfacesystem.db.util.Count
+import camerainterfacesystem.db.util.{Count, Hour}
 import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
@@ -38,14 +38,14 @@ object PresetsRepository extends SlickRepository {
     eventualResult
   }
 
-  def getAllPresets()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count)]] = {
+  def getAllPresets()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count, Hour)]] = {
     DB().run {
       sql"""
-            SELECT presets.*, COUNT(images.id) FROM presets
+            SELECT presets.*, COUNT(images.id), images.hourTaken FROM presets
             LEFT JOIN images ON presets.id = images.presetId
-            GROUP BY presets.id
-        """.as[(Preset, Int)]
-    }.map(x => x.map(r => r._1 -> Count(r._2)))
+            GROUP BY presets.id, images.hourTaken
+        """.as[(Preset, Int, Int)]
+    }.map(x => x.map(r => (r._1, Count(r._2), Hour(r._3))))
   }
 
 

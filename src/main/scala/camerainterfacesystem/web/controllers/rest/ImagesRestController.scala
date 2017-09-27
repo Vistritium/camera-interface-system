@@ -3,7 +3,8 @@ package camerainterfacesystem.web.controllers.rest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.db.repos.PresetsRepository
-import camerainterfacesystem.web.controllers.rest.forms.PresetWithCount
+import camerainterfacesystem.utils.PresetModelUtils
+import camerainterfacesystem.web.controllers.rest.forms.PresetWithCountAndHour
 
 class ImagesRestController extends AppRestController {
 
@@ -11,7 +12,7 @@ class ImagesRestController extends AppRestController {
     handleFutureError(onComplete(PresetsRepository.getAllPresets())) {
       res =>
         val flatten = res
-          .map(elem => PresetWithCount(elem._1, elem._2))
+          .map(elem => PresetWithCountAndHour(elem._1, elem._2, PresetModelUtils.hourGTMToCurrent(elem._3)))
           .map(elem => elem
             .copy(preset = elem.preset
               .copy(displayname = Option(elem.preset.displayname.getOrElse(elem.preset.name)))))
