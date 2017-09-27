@@ -11,7 +11,7 @@ pipeline {
         stage('Build, publish docker image'){
             steps {
                 sh 'docker login -u ${DOCKER_LOGIN_USERNAME} -p ${DOCKER_LOGIN_PASSWORD} ${DOCKER_REPO}'
-                sh 'sbt docker:publish'
+                sh 'for i in 1 2 3; do sbt docker:publish && break || sleep 15; done'
             }
         }
         stage('Restart service'){
