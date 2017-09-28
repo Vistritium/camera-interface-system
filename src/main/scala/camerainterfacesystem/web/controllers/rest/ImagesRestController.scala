@@ -1,6 +1,6 @@
 package camerainterfacesystem.web.controllers.rest
 
-import java.time.{OffsetDateTime, ZoneOffset}
+import java.time.{Instant, OffsetDateTime, ZoneOffset}
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -30,10 +30,10 @@ class ImagesRestController extends AppRestController {
           ImagesWithPresetForHour(res._1.normalizeName, res._2)
         }
     }
-  } ~ path("images" / "min" / Segment / "max" / Segment) { (minStr, maxStr) => {
+  } ~ path("images" / "min" / LongNumber / "max" / LongNumber) { (minEpoch, maxEpoch) => {
     parameter("dryrun" ? false) { dryrun =>
-      val min = OffsetDateTime.parse(minStr).toInstant
-      val max = OffsetDateTime.parse(maxStr).toInstant
+      val min = Instant.ofEpochMilli(minEpoch)
+      val max = Instant.ofEpochMilli(maxEpoch)
 
       handleFutureError(onComplete(ImagesRepository.deleteAllBetween(min, max, dryrun))) {
         res =>
