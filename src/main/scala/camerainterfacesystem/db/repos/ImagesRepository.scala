@@ -54,11 +54,11 @@ object ImagesRepository extends SlickRepository {
     DB().run(query).map(_ => Unit)
   }
 
-  def deleteAllBetween(min: Instant, max: Instant, dryRun: Boolean): Future[Seq[Image]] = {
+  def deleteAllBetween(min: Instant, max: Instant, dryRun: Boolean)(implicit executionContext: ExecutionContext): Future[Seq[Image]] = {
     DB().run {
       images
-        .filter(_.hourTaken > min)
-        .filter(_.hourTaken < max)
+        .filter(_.phototaken > min)
+        .filter(_.phototaken < max)
         .result
     } map { res =>
       if (!dryRun) {
