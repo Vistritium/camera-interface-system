@@ -5,6 +5,7 @@ import java.time.Instant
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.db.{DB, Tables}
+import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -53,6 +54,20 @@ object ImagesRepository extends SlickRepository {
     DB().run(query).map(_ => Unit)
   }
 
+  def deleteAllBetween(min: Instant, max: Instant, dryRun: Boolean): Future[Seq[Image]] = {
+    DB().run {
+      images
+        .filter(_.hourTaken > min)
+        .filter(_.hourTaken < max)
+        .result
+    } map { res =>
+      if (!dryRun) {
+        DB().run(images.filter(_.id inSet res.map(_.id).toSet).delete)
+      }
+      res
+    }
+  }
+
   def getImage(idOrFullpath: Either[Int, String]): Future[Option[Image]] = {
     val query = (idOrFullpath match {
       case Left(id) => images.filter(_.id === id)
@@ -85,10 +100,10 @@ object ImagesRepository extends SlickRepository {
           .map(_._1)
         query = min match {
           case Some(min) => query.filter(_.phototaken >= min)
-          case None =>  query
+          case None => query
         }
         query = max match {
-          case Some(max) =>  query.filter(_.phototaken <= max)
+          case Some(max) => query.filter(_.phototaken <= max)
           case None => query
         }
         DB().run(query

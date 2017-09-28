@@ -1,11 +1,14 @@
 package camerainterfacesystem.web.controllers.rest
 
+import java.time.{OffsetDateTime, ZoneOffset}
+
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.utils.PresetModelUtils
 import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, PresetWithCountAndHour}
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat
 
 class ImagesRestController extends AppRestController {
 
@@ -27,6 +30,17 @@ class ImagesRestController extends AppRestController {
           ImagesWithPresetForHour(res._1.normalizeName, res._2)
         }
     }
+  } ~ path("images" / "min" / Segment / "max" / Segment) { (minStr, maxStr) => {
+    parameter("dryrun" ? false) { dryrun =>
+      val min = OffsetDateTime.parse(minStr).toInstant
+      val max = OffsetDateTime.parse(maxStr).toInstant
+
+      handleFutureError(onComplete(ImagesRepository.deleteAllBetween(min, max, dryrun))) {
+        res =>
+          restComplete(res)
+      }
+    }
+  }
   }
 
 }
