@@ -17,7 +17,6 @@ object Main extends LazyLogging {
 
   def main(args: Array[String]): Unit = {
     logger.info(s"flyway migration: ${DB.migration}")
-    fail
   }
 
 }
