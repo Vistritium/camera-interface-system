@@ -5,7 +5,6 @@ import java.time.Instant
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.db.{DB, Tables}
-import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
