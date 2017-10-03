@@ -1,0 +1,11 @@
+.link-image {
+    width: calc(33vw - 0.5rem)
+}
+.regular-image {
+    width: calc(100vw - 1.5rem);
+}
+
+body {
+    margin: auto;
+    padding: 0.5rem;
+}
