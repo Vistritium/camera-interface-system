@@ -32,12 +32,14 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
     }
 
     case OnPartFinished(bytes, headers) => {
+      val system = context.system
+      val self = this.self
       Option(headers.get("content-disposition")).flatMap(_.asScala.headOption) match {
         case None => {
           if (!onComplete.isCompleted) {
             onComplete.failure(new IllegalStateException(s"Couldn't read filename from headers: $headers"))
           }
-          context.stop(self)
+          system.stop(self)
         }
         case Some(contentDispotionString) => {
           val filename = extractFilename(contentDispotionString)
@@ -72,7 +74,7 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
                 onComplete.failure(exception)
               }
 
-              context.stop(self)
+              system.stop(self)
             }
             case Success(_) => {
               processingFiles = processingFiles - processingId

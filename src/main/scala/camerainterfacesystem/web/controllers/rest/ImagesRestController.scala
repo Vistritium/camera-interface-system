@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat
 class ImagesRestController extends AppRestController {
 
   override def restRoute: Route = path("presets") {
-    handleFutureError(onComplete(PresetsRepository.getAllPresets())) {
+    handleFutureError(onComplete(PresetsRepository.getAllPresetsGroupedByHour())) {
       res =>
         val flatten = res
           .map(elem => PresetWithCountAndHour(elem._1, elem._2, PresetModelUtils.hourGTMToCurrent(elem._3)))

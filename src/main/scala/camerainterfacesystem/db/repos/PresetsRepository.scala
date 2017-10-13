@@ -41,7 +41,7 @@ object PresetsRepository extends SlickRepository {
     eventualResult
   }
 
-  def getAllPresets()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count, Hour)]] = {
+  def getAllPresetsGroupedByHour()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count, Hour)]] = {
     DB().run {
       sql"""
             SELECT presets.*, COUNT(images.id), images.hourTaken FROM presets
