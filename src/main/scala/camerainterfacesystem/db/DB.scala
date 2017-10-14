@@ -1,12 +1,15 @@
 package camerainterfacesystem.db
 
 import java.nio.file.{Files, Paths}
+import java.util.concurrent.Executors
 
 import slick.jdbc.SQLiteProfile.api._
 import camerainterfacesystem.Config
 import org.flywaydb.core.Flyway
 import slick.jdbc
 import slick.jdbc.SQLiteProfile
+
+import scala.concurrent.ExecutionContext
 
 object DB {
 
@@ -28,7 +31,15 @@ object DB {
     flyway.migrate()
   }
 
-  val slick: SQLiteProfile.backend.DatabaseDef = Database.forURL(dataSourceStr)
+  val sqlEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
+
+  //val slick: SQLiteProfile.backend.DatabaseDef = Database.forURL(dataSourceStr)
+  val slick: SQLiteProfile.backend.DatabaseDef = Database.forURL(dataSourceStr, null, null, null, null, new AsyncExecutor {
+    override def executionContext: ExecutionContext = sqlEc
+
+    override def close(): Unit = ()
+  }, keepAliveConnection = true)
+
   def apply(): jdbc.SQLiteProfile.backend.DatabaseDef = slick
 
 }
