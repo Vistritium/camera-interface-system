@@ -1,0 +1,13 @@
+@import camerainterfacesystem.Config
+@import camerainterfacesystem.db.Tables.Image
+@(images: Seq[Image])
+<div id="image-panel-container">
+    <div id="image-info"></div>
+    <img class="link-image" src="/images/download/@(images.head.fullpath)">
+    <div id="slider-container">
+        <div class="slider"/>
+    </div>
+    <script>
+            window.images = @Html(Config.objectMapper.writeValueAsString(images))
+    </script>
+</div>

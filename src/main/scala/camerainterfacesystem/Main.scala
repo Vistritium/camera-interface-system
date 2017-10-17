@@ -1,19 +1,14 @@
 package camerainterfacesystem
 
-import java.time.Instant
-import java.util.UUID
-
 import akka.actor.{ActorRef, ActorSystem, Props}
 import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.db.DB
-import camerainterfacesystem.db.Tables.Image
-import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
+import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.services.ImageDataService
 import camerainterfacesystem.web.WebServer
 import com.typesafe.scalalogging.LazyLogging
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
-import scala.util.{Failure, Random, Success}
+import scala.concurrent.ExecutionContextExecutor
 
 object Main extends LazyLogging {
 
@@ -44,6 +39,13 @@ object Main extends LazyLogging {
         }
       }
     })*/
+
+  }
+
+
+  def tmp(images: Seq[(Image, Preset)]): Unit ={
+
+    val json = Config.objectMapper.writeValueAsString(images.map(_._1))
 
   }
 

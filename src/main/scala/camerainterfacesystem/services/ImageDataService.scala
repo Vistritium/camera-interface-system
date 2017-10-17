@@ -23,10 +23,15 @@ class ImageDataService extends AppActor {
         cache.get(path, _ => Azure.download(path))
       }.map(GetDataResult))
     }
+    case CacheData(path) => {
+      cache.get(path, _ => Azure.download(path))
+    }
   }
 
 }
 
 case class GetData(fullpath: String)
+
+case class CacheData(fullpath: String)
 
 case class GetDataResult(bytes: Array[Byte])

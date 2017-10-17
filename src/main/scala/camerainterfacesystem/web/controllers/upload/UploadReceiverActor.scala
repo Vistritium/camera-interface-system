@@ -1,17 +1,16 @@
 package camerainterfacesystem.web.controllers.upload
 
 import java.io.ByteArrayInputStream
-import java.time.OffsetDateTime
+import java.time.{OffsetDateTime, ZonedDateTime}
 import java.util
 import java.util.{Objects, UUID}
 
-import camerainterfacesystem.AppActor
 import camerainterfacesystem.azure.Azure
-import camerainterfacesystem.db.DB
-import camerainterfacesystem.db.Tables.{Image, Preset}
+import camerainterfacesystem.db.Tables.Image
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.utils.ImageUtils
 import camerainterfacesystem.utils.ImageUtils.ImagePathProperties
+import camerainterfacesystem.{AppActor, Config}
 import org.apache.commons.lang3.StringUtils
 
 import scala.collection.JavaConverters._
@@ -54,7 +53,7 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
             }
             case Success(value) => value
           }
-          val offsetZoneTime: OffsetDateTime = ImageUtils.extractDateFromJpeg(bytes) match {
+          val zonedDateTime: ZonedDateTime = ImageUtils.extractDateFromJpeg(bytes) match {
             case Failure(exception) => {
               onComplete.failure(exception)
               throw new IllegalStateException(exception)
@@ -62,11 +61,15 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
             case Success(value) => value
           }
 
-          val future = for {
-            preset <- PresetsRepository.findPresetByNameOrCreateNew(props.presetName)
-            image <- ImagesRepository.addImage(Image(0, props.fullpath, props.filename, offsetZoneTime.toInstant,
-              preset.id, props.hourTaken))
-          } yield Azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+          val future = if (!Config.dryMode) {
+            for {
+              preset <- PresetsRepository.findPresetByNameOrCreateNew(props.presetName)
+              image <- ImagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toInstant,
+                preset.id, props.hourTaken))
+            } yield Azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+          } else {
+            Future {"dry mode"}
+          }
 
           future.onComplete {
             case Failure(exception) => {

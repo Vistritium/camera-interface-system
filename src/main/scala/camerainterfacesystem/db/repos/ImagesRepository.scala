@@ -35,11 +35,11 @@ object ImagesRepository extends SlickRepository {
     DB().run(query)
   }
 
-  def getNewestImagesForPreset(presetId: Int, limit: Int): Future[Seq[(Image, Preset)]] = {
+  def getNewestImagesForPreset(presetId: Int, limit: Int): Future[(Seq[Image])] = {
     require(limit >= 1, s"limit must be bigger or equals to 1: ${limit}")
-    val query = imageJoinPreset
-      .filter(_._2.id === presetId)
-      .sortBy(_._1.phototaken.desc)
+    val query = images
+      .filter(_.presetid === presetId)
+      .sortBy(_.phototaken.desc)
       .take(limit)
 
     DB().run(query.result)

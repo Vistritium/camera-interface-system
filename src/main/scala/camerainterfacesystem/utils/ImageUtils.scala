@@ -1,9 +1,10 @@
 package camerainterfacesystem.utils
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDate, LocalDateTime, OffsetDateTime, ZoneOffset}
-import java.util.Objects
+import java.time._
+import java.util.{Objects, TimeZone}
 
+import camerainterfacesystem.Config
 import org.apache.commons.imaging.Imaging
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants
@@ -12,6 +13,8 @@ import org.apache.commons.lang3.StringUtils
 import scala.util.{Failure, Success, Try}
 
 object ImageUtils {
+
+  private val timezone = TimeZone.getTimeZone(Config().getString("uploadedFormatTimezone"))
 
   def extractPropertiesFromPath(name: String): Try[ImagePathProperties] = {
     Try {
@@ -32,7 +35,7 @@ object ImageUtils {
 
   private val exifDateFormatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
 
-  def extractDateFromJpeg(byteArray: Array[Byte]): Try[OffsetDateTime] = {
+  def extractDateFromJpeg(byteArray: Array[Byte]): Try[ZonedDateTime] = {
     Option(Imaging.getMetadata(byteArray))
       .map(_.asInstanceOf[JpegImageMetadata])
       .flatMap(x => Option(x.getExif)) match {
@@ -40,7 +43,7 @@ object ImageUtils {
         val strings = exif.getFieldValue(ExifTagConstants.EXIF_TAG_DATE_TIME_DIGITIZED)
         require(Objects.nonNull(strings) && strings.nonEmpty, "Found exif data but date is empty")
         val utcLocalDateTime = LocalDateTime.parse(strings.head, exifDateFormatter)
-        Success(OffsetDateTime.of(utcLocalDateTime, ZoneOffset.UTC))
+        Success(ZonedDateTime.of(utcLocalDateTime, timezone.toZoneId))
       }
       case None => Failure(new IllegalStateException("Couldn't extract metadata from jpg"))
     }

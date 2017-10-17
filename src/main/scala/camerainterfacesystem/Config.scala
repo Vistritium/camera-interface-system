@@ -23,4 +23,6 @@ object Config {
   }
 
   val userZone: ZoneId = ZoneId.of(config.getString("userTimezone"))
+
+  val dryMode: Boolean = config.getBoolean("dryMode")
 }
