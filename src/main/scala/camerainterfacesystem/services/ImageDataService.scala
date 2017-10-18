@@ -24,7 +24,9 @@ class ImageDataService extends AppActor {
       }.map(GetDataResult))
     }
     case CacheData(path) => {
-      cache.get(path, _ => Azure.download(path))
+      Future {
+        cache.get(path, _ => Azure.download(path))
+      }
     }
   }
 
