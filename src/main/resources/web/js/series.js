@@ -30,6 +30,7 @@ function handleImageSeries(images) {
 
     $("#slider-container").slider({
         max: images.length - 1,
+        value: images.length - 1,
 /*        stop: function (event, ui) {
             selectImage(images[ui.value])
         },*/
