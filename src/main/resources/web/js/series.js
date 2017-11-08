@@ -4,7 +4,6 @@ $(document).ready(function () {
         handleImageSeries(window.images);
     }
 
-
 });
 
 
@@ -12,7 +11,7 @@ function handleImageSeries(images) {
 
     console.log("Images: " + images.length);
 
-    var currentImage = images[0];
+    var currentImage = images[images.length - 1];
     var imageNameHandle = $('#image-info');
     var imageHandle = $('#image-panel-container .link-image');
 
@@ -39,6 +38,6 @@ function handleImageSeries(images) {
         }
     });
 
-    selectImage(images[0])
+    selectImage(images[images.length - 1])
 }
 
