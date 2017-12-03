@@ -1,7 +1,7 @@
 @import camerainterfacesystem.db.Tables.Image
 @import camerainterfacesystem.db.Tables.Preset
 @import camerainterfacesystem.utilmodel.HoursImageCount
-@(images: Seq[Image], preset: Preset, hour: Int, hours: Seq[HoursImageCount])
+@(images: Option[Seq[Image]], preset: Preset, hour: Int, hours: Seq[HoursImageCount])
 @main(List(
     "/web/css/series.css",
     "/web/js/series.js"
@@ -25,6 +25,8 @@
         }
     </div>
 
+    @if(images.isDefined){
+        @gallery(images.get)
+    }
 
-    @imageSeries2(images.reverse)
 }

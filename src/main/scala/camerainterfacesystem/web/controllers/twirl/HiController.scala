@@ -55,7 +55,7 @@ class HiController extends AppController {
               case Right(res) => {
                 htmlToResponseMarshalable {
                   res._3.foreach(image => Main.imageDataService ! CacheData(image.fullpath))
-                  newestPresetList(res._3, res._4, res._2, res._1)
+                  newestPresetList(hourParam.map(_ => res._3), res._4, res._2, res._1)
                 }
               }
             }
