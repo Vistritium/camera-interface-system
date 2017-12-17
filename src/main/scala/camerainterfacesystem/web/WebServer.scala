@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import camerainterfacesystem.AppActor
+import camerainterfacesystem.{AppActor, Config}
 import camerainterfacesystem.web.controllers.rest.AppRestController
 import org.reflections.Reflections
 import org.reflections.scanners.{SubTypesScanner, TypeAnnotationsScanner}
@@ -35,7 +35,7 @@ class WebServer extends AppActor {
   require(controllers.nonEmpty)
   private val route = controllers.map(_.route).reduce(_ ~ _)
 
-  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", 8080)
+  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", Config.config.getInt("port"))
 
   override def receive = {
     case _ =>

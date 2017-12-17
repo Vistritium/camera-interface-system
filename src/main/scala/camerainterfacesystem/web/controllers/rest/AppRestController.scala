@@ -6,6 +6,8 @@ import akka.http.scaladsl.server.{Route, StandardRoute}
 import camerainterfacesystem.Config
 import camerainterfacesystem.web.AppController
 
+import scala.concurrent.Future
+
 abstract class AppRestController extends AppController {
 
   private val objectMapper = Config.objectMapper
@@ -14,9 +16,17 @@ abstract class AppRestController extends AppController {
     restRoute
   }
 
-  protected def restComplete(result: AnyRef): StandardRoute = {
+  protected def restComplete(result: Any): StandardRoute = {
     val json = objectMapper.writeValueAsBytes(result)
     complete(HttpResponse(status = StatusCodes.OK, entity = HttpEntity.apply(MediaTypes.`application/json`, json)))
+  }
+
+  protected def restFutureComplete(result: Future[Any]) = {
+    handleFutureError(onComplete(result)) {
+      res => {
+        restComplete(res)
+      }
+    }
   }
 
   def restRoute: Route

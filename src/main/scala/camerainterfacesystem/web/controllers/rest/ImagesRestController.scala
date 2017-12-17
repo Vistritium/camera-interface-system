@@ -1,14 +1,17 @@
 package camerainterfacesystem.web.controllers.rest
 
-import java.time.{Instant, OffsetDateTime, ZoneOffset}
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.utils.PresetModelUtils
-import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, PresetWithCountAndHour}
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat
+import camerainterfacesystem.web.controllers.Unmarshallers
+import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, MetaImage, PresetWithCountAndHour}
+
+import scala.concurrent.Future
 
 class ImagesRestController extends AppRestController {
 
@@ -30,17 +33,39 @@ class ImagesRestController extends AppRestController {
           ImagesWithPresetForHour(res._1.normalizeName, res._2)
         }
     }
-  } ~ path("images" / "min" / LongNumber / "max" / LongNumber) { (minEpoch, maxEpoch) => {
-    parameter("dryrun" ? false) { dryrun =>
-      val min = Instant.ofEpochMilli(minEpoch)
-      val max = Instant.ofEpochMilli(maxEpoch)
+  } ~ get {
+    path("images" / "min" / LongNumber / "max" / LongNumber) { (minEpoch, maxEpoch) => {
+      parameter("dryrun" ? false) { dryrun =>
+        val min = Instant.ofEpochMilli(minEpoch)
+        val max = Instant.ofEpochMilli(maxEpoch)
 
-      handleFutureError(onComplete(ImagesRepository.deleteAllBetween(min, max, dryrun))) {
-        res =>
-          restComplete(res)
+        restFutureComplete(ImagesRepository.deleteAllBetween(min, max, dryrun))
+      }
+    }
+    } ~ path("images") {
+      parameters(
+        'min.as(Unmarshallers.instantUnmarshaller),
+        'max.as(Unmarshallers.instantUnmarshaller) ? Instant.now(),
+        'granulation.as[Int] ? 1, 'presets.as(Unmarshallers.seqIntUnmarshaller),
+        'hours.as(Unmarshallers.seqIntUnmarshaller),
+        'count.as[Boolean] ? false) { (min, max, granulation, presets, hours, count) =>
+        val result: Future[Any] = if (!count) {
+          ImagesRepository.findImages(presets.toSet, hours.toSet, min, max, granulation)
+            .map(_
+              .sortWith((l, r) => l._1.phototaken.isBefore(r._1.phototaken))
+              .map(x => new MetaImage(x._1)))
+        } else {
+          ImagesRepository.findImagesCount(presets.toSet, hours.toSet, min, max, granulation)
+        }
+
+        restFutureComplete(result)
       }
     }
   }
-  }
+
 
 }
+
+
+
+

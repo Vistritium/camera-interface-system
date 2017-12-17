@@ -1,10 +1,6 @@
-@(fullNames: Seq[(String, Option[String])])
-@for(image <- fullNames) {
-    @if(image._2.isDefined) {
-        <a href="@(image._2.get)">
-            <img class="link-image" src="/images/download/@(image._1)">
-        </a>
-    } else {
-        <img class="regular-image" src="/images/download/@(image._1)">
-    }
+@import camerainterfacesystem.db.Tables.Image
+@(images: Seq[Image])
+@for(image <- images) {
+    <img class="regular-image" src="/images/download/@(image.fullpath)" onclick="quickPreset(@image.presetid)">
 }
+

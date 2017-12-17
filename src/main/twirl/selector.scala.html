@@ -1,0 +1,89 @@
+@import camerainterfacesystem.Config
+@import camerainterfacesystem.db.Tables.Image
+@(images: Seq[Image], hours: Seq[Int], minDateIso: String, maxDateIso: String)
+<div id="image-counter">
+    <div id="image-counter-text">Wyświetl <span id="image-counter-value">1000</span></div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col" style="margin: 10px">
+            <h3>Wyszukiwanie zaawansowane</h3>
+        </div>
+    </div>
+    <div class="row makespace">
+        <h5>Presety</h5>
+    </div>
+    <div class="row">
+        @for(image <- images) {
+            <div class="col text-left">
+                <img class="select-image" src="/images/download/@(image.fullpath)" selectvalue="@(image.presetid)">
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col text-right">
+            <button type="button" class="btn btn-primary btn-selector" id="btn-selector-all">
+                Wszystkie</button>
+        </div>
+        <div class="col text-left">
+            <button type="button" class="btn btn-primary btn-selector" id="btn-selector-none">
+                Żaden</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="row makespace">
+                <h5>Godziny</h5>
+            </div>
+            <div class="row" id="hours1row">
+                <ul id="hours1" class="hours">
+                @for(hour <- hours.filter(hour => hour >= 9 && hour < 19).sorted.map(s => s"  $s  ")) {
+                    <li>@hour</li>
+                }
+                </ul>
+            </div>
+            <div class="row">
+                <ul id="hours2" class="hours">
+                @for(hour <- hours.filter(hour => hour < 9 || hour >= 19).sorted.map(s => s"  $s  ")) {
+                    <li>@hour</li>
+                }
+                </ul>
+            </div>
+            <div class="row justify-content-start">
+                <div class="col">
+                    <button type="button" class="btn btn-primary btn-selector" id="none-hours">
+                        Żaden</button>
+                </div>
+                <div class="col">
+                    <button type="button" class="btn btn-primary btn-selector" id="all-hours">
+                        Wszystkie</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div style="width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 30px">
+                <label for="spinner" style="margin-right: 20px"><h5>Granulacja:</h5></label>
+                <input id="granulation" type="number" min="1" max="10" value="1" />
+            </div>
+        </div>
+    </div>
+    <div class="row makespace" style="margin-top: 20px">
+        <h5>Przedział czasowy</h5>
+    </div>
+    <div class="row">
+        <div style="margin-top: 5px; margin-bottom: 10px;
+            width: 100%">
+            <div id="date-slider"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        window.hours = @Html(Config.objectMapper.writeValueAsString(hours))
+                window.minDate = new Date("@minDateIso");
+        window.maxDate = new Date("@maxDateIso");
+</script>

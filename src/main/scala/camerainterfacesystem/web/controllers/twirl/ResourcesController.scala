@@ -7,5 +7,9 @@ import camerainterfacesystem.web.AppController
 class  ResourcesController extends AppController {
   override def route: Route = pathPrefix("web") {
     getFromResourceDirectory("web", getClass.getClassLoader)
+  } ~ get {
+    pathPrefix("favicon.ico") {
+      getFromResource("web/favicon.ico")
+    }
   }
 }

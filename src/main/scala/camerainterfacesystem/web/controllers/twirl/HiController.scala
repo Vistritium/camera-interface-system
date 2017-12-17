@@ -1,26 +1,48 @@
 package camerainterfacesystem.web.controllers.twirl
 
 import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import camerainterfacesystem.Main
-import camerainterfacesystem.db.repos.PresetsRepository
+import camerainterfacesystem.{Config, Main}
+import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.db.util.PresetId
 import camerainterfacesystem.services.{CacheData, ImagesService}
 import camerainterfacesystem.utils.FunctionalUtils
 import camerainterfacesystem.web.{AppController, Controller}
+import com.typesafe.scalalogging.LazyLogging
 import html.{index, newestPresetList}
 
 @Controller
-class HiController extends AppController {
+class HiController extends AppController with LazyLogging {
+
+  private val coolHour: Int = Config.config.getInt("defaultHour")
+
+  private val instantIsoDateFormatter = DateTimeFormatter.ISO_INSTANT
 
   override def route: Route = pathSingleSlash {
     get {
-      handleFutureError(onComplete(ImagesService.getNewestSnaps())) {
-        newest => {
-          htmlToResponseMarshalable(index(newest.map(_._1)))
+
+      val res = for {
+        availableHours <- ImagesRepository.getAvailableHours()
+        closestHour = availableHours.minBy(v => math.abs(v - coolHour))
+        newestSnaps <- ImagesService.getNewestSnaps(Some(closestHour))
+        minDate <- ImagesRepository.getEarliestDate()
+        maxDate <- ImagesRepository.getLatestDate()
+      } yield (availableHours, newestSnaps, minDate, maxDate)
+
+
+      handleFutureError(onComplete(res)) {
+        res => {
+          val images = res._2.map(_._1)
+          val hours = res._1
+          htmlToResponseMarshalable(index(images, hours,
+            instantIsoDateFormatter.format(res._3.getOrElse(Instant.now().minus(365, ChronoUnit.DAYS))),
+            instantIsoDateFormatter.format(res._4.getOrElse(Instant.now()))
+          ))
         }
       }
     }

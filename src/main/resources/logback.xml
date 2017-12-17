@@ -7,7 +7,7 @@
         </encoder>
     </appender>
 
-    <!--<logger name="slick.jdbc" level="DEBUG"/>-->
+    <logger name="camerainterfacesystem" level="DEBUG"/>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

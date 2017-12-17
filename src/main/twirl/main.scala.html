@@ -1,14 +1,16 @@
 @(resources: List[String])(content: Html)
 <!DOCTYPE html>
+@*[
+<!ATTLIST tag selectvalue CDATA #IMPLIED>
+]>*@
 <html>
     <head>
         <title>Czapli</title>
-        <link href="/web/libs/bootstrap.min.css" rel="stylesheet">
-        <link href="/web/libs/bootstrap-grid.min.css" rel="stylesheet">
-        <link href="/web/libs/bootstrap-reboot.min.css" rel="stylesheet">
-        <link href="/web/libs/jqueryui/jquery-ui.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link href="/web/libs/jqueryui/jquery-ui.css" rel="stylesheet">
         <link href="/web/libs/jqueryui/jquery-ui.structure.css" rel="stylesheet">
         <link href="/web/libs/jqueryui/jquery-ui.theme.min.css" rel="stylesheet">
+        <link href="/web/libs/jQRangeSlider/iThing-min.css" rel="stylesheet">
         <link href="/web/css/main.css" rel="stylesheet">
         <link rel="stylesheet" href="/web/libs/photoswipe/photoswipe.css">
         <link rel="stylesheet" href="/web/libs/photoswipe/default-skin/default-skin.css">
@@ -17,18 +19,14 @@
             }
         </head>
     <body>
-        <section class="content">
-
-            <div class="row">
-
-            </div>
-        </section>
-        <section class="content">@content</section>
+        @content
         <script src="/web/libs/jquery-3.2.1.min.js"></script>
+        <script src="/web/libs/jqueryui/jquery-ui.min.js"></script>
+        <script src="/web/libs/jQRangeSlider/jQDateRangeSlider-withRuler-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
         <script src="/web/libs/lodash.min.js"></script>
         <script src="/web/libs/moment/moment.js"></script>
-        <script src="/web/libs/bootstrap.min.js"></script>
-        <script src="/web/libs/jqueryui/jquery-ui.min.js"></script>
         <script src="/web/libs/photoswipe/photoswipe.min.js"></script>
         <script src="/web/libs/photoswipe/photoswipe-ui-default.min.js"></script>
         <script src="/web/js/main.js"></script>

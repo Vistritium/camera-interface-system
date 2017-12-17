@@ -13,9 +13,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object ImagesService extends AppService {
 
-  def getNewestSnaps()(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset, Array[Byte])]] = {
+  def getNewestSnaps(hour: Option[Int] = None)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset, Array[Byte])]] = {
     for {
-      images <- ImagesRepository.getNewestImagesForAllPresets()
+      images <- hour match {
+        case Some(hour) => ImagesRepository.getNewestImagesForAllPresets(hour)
+        case None => ImagesRepository.getNewestImagesForAllPresets()
+      }
       imageIdToPreset = images.map(x => x._1.id -> x._2).toMap
       withBytes <- getBytes(images.map(_._1))
     } yield withBytes.map(x => (x._1, imageIdToPreset(x._1.id), x._2))

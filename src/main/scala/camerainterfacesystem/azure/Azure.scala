@@ -6,6 +6,8 @@ import camerainterfacesystem.Config
 import com.microsoft.azure.storage.CloudStorageAccount
 import org.apache.commons.io.IOUtils
 
+import scala.util.Try
+
 
 object Azure {
 
@@ -13,7 +15,11 @@ object Azure {
   private val connectionString = config.getString("blobConnectionString")
   private val containerName = config.getString("container")
 
-  private val account = CloudStorageAccount.parse(connectionString)
+  private val account = try {
+    CloudStorageAccount.parse(connectionString)
+  } catch {
+    case e: Exception => throw new IllegalStateException(s"Wrong connection string: ${connectionString}", e)
+  }
   private val serviceClient = account.createCloudBlobClient()
   private val container = serviceClient.getContainerReference(containerName)
   require(container.exists(), s"azure container must exist: $containerName")

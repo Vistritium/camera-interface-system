@@ -5,6 +5,8 @@ import java.time.Instant
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.db.{DB, Tables}
+import camerainterfacesystem.utils.CollectionUtils
+import camerainterfacesystem.utils.CollectionUtils._
 import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -75,6 +77,17 @@ object ImagesRepository extends SlickRepository {
     DB().run(query)
   }
 
+  def getNewestImagesForAllPresets(hour: Int): Future[Vector[(Image, Preset)]] = {
+    val sql =
+      sql"""SELECT i1.*, presets.*
+        FROM images i1
+        LEFT JOIN images i2 ON i1.presetId == i2.presetId AND i1.photoTaken < i2.photoTaken AND i1.hourTaken = i2.hourTaken
+        LEFT JOIN presets ON i1.presetId == presets.id
+        WHERE i2.presetId IS NULL AND i1.hourTaken = $hour""".as[(Image, Preset)]
+
+    DB().run(sql)
+  }
+
   def getNewestImagesForAllPresets(): Future[Vector[(Image, Preset)]] = {
 
     val sql =
@@ -111,6 +124,53 @@ object ImagesRepository extends SlickRepository {
         }
       }
     }
+  }
+
+  def findImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
+    val query = prepareFindImages(presets, hours, min, max, granulation)
+    DB().run(query.result.map(res => {
+      val granulatedSize = CollectionUtils.granulation(granulation, res.size)
+      res.skip(granulation)
+    }))
+  }
+
+  def findImagesCount(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Int] = {
+    val mainQuery = prepareFindImages(presets, hours, min, max, granulation)
+    val query = mainQuery.length
+    DB().run(query.result)
+      .map(CollectionUtils.granulation(_, granulation))
+  }
+
+  private def prepareFindImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int) = {
+    imageJoinPreset
+      .filter(_._2.id.inSet(presets))
+      .filter(_._1.hourTaken.inSet(hours))
+      .filter(_._1.phototaken >= min)
+      .filter(_._1.phototaken <= max)
+    /*.zipWithIndex
+    .map(_._1)*/
+  }
+
+  def getAvailableHours(): Future[Seq[Int]] = {
+    DB().run(
+      images.groupBy(_.hourTaken).map(_._1).result
+    )
+  }
+
+  def getEarliestDate(): Future[Option[Instant]] = {
+    DB().run(images
+      .map(_.phototaken)
+      .sortBy(_.asc)
+      .take(1)
+      .result.headOption)
+  }
+
+  def getLatestDate(): Future[Option[Instant]] = {
+    DB().run(images
+      .map(_.phototaken)
+      .sortBy(_.desc)
+      .take(1)
+      .result.headOption)
   }
 
   def main(args: Array[String]): Unit = {
