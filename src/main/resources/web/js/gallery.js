@@ -17,8 +17,8 @@ function displayGallery(images){
     var options = {
         // optionName: 'option value'
         // for example:
-        index: images.length - 1,
-        loop: false,
+        index: 0,
+        loop: true,
         preload: [6, 6],
         shareEl: false
     };
