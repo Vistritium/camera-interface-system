@@ -75,12 +75,41 @@ $(document).ready(function () {
         defaultValues: {min: window.minDate, max: window.maxDate}
     });
 
-    window.dateRangeSlider.bind('userValuesChanged', function (x, y) {
-        update()
-    });
+
 
     $('#image-counter-text').click(function () {
         displayCurrentGallery();
+    });
+
+    var minValueForDateInput = moment(window.minDate).format("YYYY-MM-DD");
+    var maxValueForDateInput = moment(window.maxDate).format("YYYY-MM-DD");
+    var datePickerFrom = $('#date-picker-from');
+    var datePickerTo = $('#date-picker-to');
+    datePickerFrom[0].value = minValueForDateInput;
+    datePickerFrom.attr("min", minValueForDateInput);
+    datePickerFrom.attr("max", maxValueForDateInput);
+    datePickerTo[0].value = maxValueForDateInput;
+    datePickerTo.attr("min", minValueForDateInput);
+    datePickerTo.attr("max", maxValueForDateInput);
+
+    datePickerFrom.change(function(){
+        var dateValues = window.dateRangeSlider.dateRangeSlider("values");
+        var value = datePickerFrom.val();
+        window.dateRangeSlider.dateRangeSlider("values", new Date(value), dateValues.max)
+    });
+
+    datePickerTo.change(function(){
+        var dateValues = window.dateRangeSlider.dateRangeSlider("values");
+        var value = datePickerTo.val();
+        window.dateRangeSlider.dateRangeSlider("values", dateValues.min, new Date(value))
+    });
+
+    window.dateRangeSlider.bind('userValuesChanged', function (x, y) {
+        update();
+        var dates = getDates();
+        console.log("values changing: " + dates);
+        datePickerFrom[0].value = moment(dates.min).format("YYYY-MM-DD");
+        datePickerTo[0].value = moment(dates.max).format("YYYY-MM-DD");
     });
 
 });
