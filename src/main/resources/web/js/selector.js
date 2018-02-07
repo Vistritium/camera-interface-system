@@ -70,9 +70,10 @@ $(document).ready(function () {
         update()
     });
 
+    var defaultFromDate = moment(window.maxDate).add(-1,"days").toDate();
     window.dateRangeSlider = $('#date-slider').dateRangeSlider({
         bounds: {min: window.minDate, max: window.maxDate},
-        defaultValues: {min: window.minDate, max: window.maxDate}
+        defaultValues: {min: defaultFromDate, max: window.maxDate}
     });
 
 
@@ -81,7 +82,7 @@ $(document).ready(function () {
         displayCurrentGallery();
     });
 
-    var minValueForDateInput = moment(window.minDate).format("YYYY-MM-DD");
+    var minValueForDateInput = moment(defaultFromDate).format("YYYY-MM-DD");
     var maxValueForDateInput = moment(window.maxDate).format("YYYY-MM-DD");
     var datePickerFrom = $('#date-picker-from');
     var datePickerTo = $('#date-picker-to');
