@@ -82,11 +82,11 @@ $(document).ready(function () {
         displayCurrentGallery();
     });
 
-    var minValueForDateInput = moment(defaultFromDate).format("YYYY-MM-DD");
+    var minValueForDateInput = moment(window.minDate).format("YYYY-MM-DD");
     var maxValueForDateInput = moment(window.maxDate).format("YYYY-MM-DD");
     var datePickerFrom = $('#date-picker-from');
     var datePickerTo = $('#date-picker-to');
-    datePickerFrom[0].value = minValueForDateInput;
+    datePickerFrom[0].value = moment(defaultFromDate).format("YYYY-MM-DD");
     datePickerFrom.attr("min", minValueForDateInput);
     datePickerFrom.attr("max", maxValueForDateInput);
     datePickerTo[0].value = maxValueForDateInput;
