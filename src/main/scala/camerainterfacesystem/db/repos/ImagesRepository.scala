@@ -129,8 +129,7 @@ object ImagesRepository extends SlickRepository {
   def findImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
     val query = prepareFindImages(presets, hours, min, max, granulation)
     DB().run(query.result.map(res => {
-      val granulatedSize = CollectionUtils.granulation(granulation, res.size)
-      res.skip(granulation)
+      res
     }))
   }
 
@@ -171,12 +170,6 @@ object ImagesRepository extends SlickRepository {
       .sortBy(_.desc)
       .take(1)
       .result.headOption)
-  }
-
-  def main(args: Array[String]): Unit = {
-    import scala.concurrent.duration._
-    val tuples = Await.result(getNewestImagesForAllPresets(), 10 seconds)
-    println(tuples.mkString("\n"))
   }
 
 }
