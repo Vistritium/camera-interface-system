@@ -4,9 +4,6 @@ import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 
 import camerainterfacesystem.Config
 import com.microsoft.azure.storage.CloudStorageAccount
-import org.apache.commons.io.IOUtils
-
-import scala.util.Try
 
 
 object Azure {
