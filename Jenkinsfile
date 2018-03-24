@@ -14,12 +14,10 @@ pipeline {
                 sh 'for i in $(seq 1 3); do sbt -no-colors docker:publish && s=0 && break || s=$? && sleep 1; done; (exit $s)'
             }
         }
-        stage('Restart service'){
+        stage('Restart service') {
             steps {
                 sh 'docker pull nowicki.azurecr.io/nowicki/camera-interface-system:latest'
-                dir('/root/czapli-stack){
-                    sh 'docker-compose up'
-                }
+                sh 'docker service update --with-registry-auth --image nowicki.azurecr.io/nowicki/camera-interface-system:latest czapli-stack_app'
 
             }
         }
