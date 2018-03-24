@@ -17,7 +17,10 @@ pipeline {
         stage('Restart service'){
             steps {
                 sh 'docker pull nowicki.azurecr.io/nowicki/camera-interface-system:latest'
-                sh 'docker service update --with-registry-auth --image nowicki.azurecr.io/nowicki/camera-interface-system:latest camera-interface-system'
+                dir('/root/czapli-stack){
+                    sh 'docker-compose up'
+                }
+
             }
         }
     }

@@ -1,4 +1,6 @@
 moment.locale('pl');
+moment.tz.setDefault("Europe/Warsaw");
+console.log("Setting moment");
 
 function quickPreset(preset) {
     console.log("preset: " + preset)
