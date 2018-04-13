@@ -34,7 +34,8 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-imaging" % "1.0-R1534292",
   "com.github.ben-manes.caffeine" % "caffeine" % "2.5.5",
   "com.github.blemale" %% "scaffeine" % "2.2.0",
-  "com.chuusai" %% "shapeless" % "2.3.2"
+  "com.chuusai" %% "shapeless" % "2.3.2",
+  "com.squareup.okhttp3" % "okhttp" % "3.10.0"
 )
 
 javaOptions in Universal ++= Seq(

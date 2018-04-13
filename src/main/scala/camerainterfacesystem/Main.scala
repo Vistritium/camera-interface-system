@@ -20,6 +20,7 @@ object Main extends LazyLogging {
   val imageDataService: ActorRef = system.actorOf(Props[ImageDataService], "imagedataservice")
 
   def main(args: Array[String]): Unit = {
+
     logger.info(s"flyway migration: ${DB.migration}")
 
 /*    val presets = List("gorka", "stol", "beczka", "ogrod wisnia", "altana", "doniczki", "las", "ogrod swierki", "hustawka")
