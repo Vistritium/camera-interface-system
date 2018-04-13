@@ -2,6 +2,7 @@ package camerainterfacesystem.web.controllers.rest
 
 import java.nio.charset.StandardCharsets
 
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.{HttpCookie, HttpCookiePair}
 import akka.http.scaladsl.model.{DateTime, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.server.Directives._
@@ -41,6 +42,22 @@ class GoogleDriveController extends AppRestController {
           complete(HttpResponse(StatusCodes.Conflict, entity = Config.objectMapper.writeValueAsString(erorMsg)))
         }
       }
+    } ~ path("login") {
+      redirect(
+        Uri("https://accounts.google.com/o/oauth2/v2/auth")
+          .withQuery(
+            Query(Map(
+              "scope" -> "https://www.googleapis.com/auth/drive.file",
+              "access_type" -> "offline",
+              "include_granted_scopes" -> "true",
+              "state" -> "/",
+              "redirect_uri" -> Config().getString("google.redirect_uri"),
+              "response_type" -> "code",
+              "client_id" -> Config().getString("google.client_id"),
+              "prompt" -> "consent"
+            ))),
+        StatusCodes.TemporaryRedirect
+      )
     }
   }
 
@@ -55,7 +72,8 @@ object GoogleDriveController {
       GoogleDriveController.AuthDataCookieName,
       Base64.encodeBase64URLSafeString(Config.objectMapper.writeValueAsString(data).getBytes(StandardCharsets.UTF_8)),
       Some(DateTime.MaxValue),
-      httpOnly = true
+      httpOnly = true,
+      path = Some("/")
     )
   }
 

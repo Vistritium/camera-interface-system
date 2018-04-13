@@ -1,5 +1,6 @@
 @import camerainterfacesystem.db.Tables.Image
-@(images: Seq[Image], hours: Seq[Int], minDateIso: String, maxDateIso: String)
+@import camerainterfacesystem.services.googledrive.AuthData
+@(images: Seq[Image], hours: Seq[Int], minDateIso: String, maxDateIso: String, googleAuth: Option[AuthData])
 @main(List(
     "/web/js/call.js",
     "/web/js/gallery.js",
@@ -8,6 +9,18 @@
     "/web/libs/multiPicker/multipicker.min.css",
     "/web/libs/multiPicker/multipicker.min.js")
 ) {
+    @if(googleAuth.isEmpty) {
+
+        <div class="container">
+            <div class="row">
+                <div class="alert alert-warning">
+                    <a href="/api/googledrive/login" class="alert-link">
+                        Jesteś niezalogowany do GoogleDrive. Kliknij aby zalogować.</a>
+                </div>
+            </div>
+        </div>
+    }
+
     @imageSeries(images)
     <hr>
     @selector(images, hours, minDateIso, maxDateIso)
