@@ -36,7 +36,6 @@ class HiController extends AppController with LazyLogging {
           maxDate <- ImagesRepository.getLatestDate()
         } yield (availableHours, newestSnaps, minDate, maxDate)
 
-
         handleFutureError(onComplete(res)) {
           res => {
             val images = res._2.map(_._1)

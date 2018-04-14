@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.typesafe.config.{Config, ConfigFactory}
 import okhttp3.OkHttpClient
+import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 
 object Config {
 
@@ -51,6 +52,10 @@ object Config {
 
   val httpClient: OkHttpClient = {
     new OkHttpClient()
+  }
+
+  val apacheHttpClient: CloseableHttpClient = {
+    HttpClients.createMinimal()
   }
 
   val userZone: ZoneId = ZoneId.of(config.getString("userTimezone"))

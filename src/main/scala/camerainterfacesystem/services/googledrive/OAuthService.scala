@@ -4,7 +4,7 @@ import java.time.Instant
 
 import camerainterfacesystem.Config
 import camerainterfacesystem.services.AppService
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty}
 import okhttp3.{FormBody, Request, Response}
 
 object OAuthService extends AppService {
@@ -37,7 +37,7 @@ object OAuthService extends AppService {
 
     val requestTime = Instant.now()
     val response = Config.httpClient.newCall(request).execute()
-    checkIfAuthProblem(response)
+    checkIfAuthProblem(response.code())
     if (response.isSuccessful) {
       val tokenRequestResponse = Config.objectMapper.readValue(response.body().bytes(), classOf[TokenRequestResponse])
       val expireDate = requestTime.plusSeconds(tokenRequestResponse.expiresIn)
@@ -51,7 +51,7 @@ object OAuthService extends AppService {
   }
 
   def refreshToken(authData: AuthData): AuthData = {
-
+    logger.debug("Refreshing token")
     val formBody =
       buildCommonParams
         .add("grant_type", "refresh_token")
@@ -65,10 +65,12 @@ object OAuthService extends AppService {
 
     val response = Config.httpClient.newCall(request).execute()
     val requestTime = Instant.now()
-    checkIfAuthProblem(response)
-    if (!response.isSuccessful) {
+    checkIfAuthProblem(response.code())
+    if (response.isSuccessful) {
+      logger.debug("Refreshed token")
       val tokenRequestResponse = Config.objectMapper.readValue(response.body().bytes(), classOf[TokenRequestResponse])
       val expireDate = requestTime.plusSeconds(tokenRequestResponse.expiresIn)
+      logger.debug(s"Token expire at ${expireDate} cause expiresIn is ${tokenRequestResponse.expiresIn} and requestTime is ${requestTime}")
       authData.copy(accessToken = tokenRequestResponse.accessToken, expireDate = expireDate)
     } else {
       throw new IllegalStateException(s"${response.code()} ${response.message()}")
@@ -76,9 +78,13 @@ object OAuthService extends AppService {
   }
 
   def performAroundToken[T](authData: AuthData, operation: (AuthData) => T): (T, AuthData) = {
-    val validAuthData = if (authData.isExpired) {
+    val validAuthData = if (authData.isExpired()) {
+      logger.debug(s"Refresing token cause now is ${Instant.now()} and token expired at ${authData.expireDate}")
       refreshToken(authData)
-    } else authData
+    } else {
+      logger.debug(s"Not refreshing token cause it is valid till ${authData.expireDate.toString}")
+      authData
+    }
     try {
       operation.apply(validAuthData) -> validAuthData
     } catch {
@@ -89,9 +95,9 @@ object OAuthService extends AppService {
     }
   }
 
-  def checkIfAuthProblem(response: Response): Unit = {
-    if (response.code() == 400) {
-      logger.error(s"Http error with code ${response.code()} ${response.body().string()}")
+  def checkIfAuthProblem(code: Int): Unit = {
+    if (code == 400) {
+      logger.error(s"Http error with code ${code}")
       throw new PermissionException
     }
   }
@@ -109,5 +115,6 @@ case class AuthData(
                      expireDate: Instant,
                      refreshToken: String
                    ) {
-  def isExpired(): Boolean = expireDate.isAfter(Instant.now())
+  @JsonIgnore
+  def isExpired(): Boolean = expireDate.isBefore(Instant.now())
 }

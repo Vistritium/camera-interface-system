@@ -7,9 +7,12 @@ import akka.http.scaladsl.model.headers.{HttpCookie, HttpCookiePair}
 import akka.http.scaladsl.model.{DateTime, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import camerainterfacesystem.Config
-import camerainterfacesystem.services.googledrive.{AuthData, OAuthService}
+import camerainterfacesystem.{Config, Main}
+import camerainterfacesystem.db.repos.ImagesRepository
+import camerainterfacesystem.services.{GetData, GetDataResult, ImagesService}
+import camerainterfacesystem.services.googledrive.{AuthData, GoogleDriveUploadService, OAuthService}
 import org.apache.commons.codec.binary.Base64
+import akka.pattern.ask
 
 class GoogleDriveController extends AppRestController {
 
@@ -28,38 +31,61 @@ class GoogleDriveController extends AppRestController {
         case Some(_) => complete("yes")
         case None => complete("no")
       }
-    } ~ path("upload" / LongNumber) { id =>
-      optionalCookie(GoogleDriveController.AuthDataCookieName) {
-        case Some(HttpCookiePair(_, value)) => {
-          val authData = Config.objectMapper.readValue(value, classOf[AuthData])
-          logger.info(authData.toString)
-          complete(s"Let's pretend that it succeded | \n ${value}")
+    } ~ path("upload" / IntNumber) { id =>
+      GoogleDriveController.extractAuthData {
+        case Some(authData) => {
+          handleFutureError(onComplete(ImagesRepository.getImage(Left(id)))) {
+            case Some(image) => {
+              handleFutureError(onComplete((Main.imageDataService ? GetData(image.fullpath)).mapTo[GetDataResult])) {
+                imageData => {
+                  GoogleDriveController.updateAuthDataIfNeeded {
+                    GoogleDriveUploadService.uploadImage(authData, image.filename, imageData.bytes)
+                  } { _ =>
+                    complete("ok")
+                  }
+                }
+              }
+            }
+            case None => {
+              complete(HttpResponse(status = StatusCodes.NotFound, entity = s"Image of id ${id} does not exist"))
+            }
+          }
         }
         case None => {
-          val erorMsg = new {
-            val errorCode = "AUTH_DATA_NOT_EXIST"
-          }
-          complete(HttpResponse(StatusCodes.Conflict, entity = Config.objectMapper.writeValueAsString(erorMsg)))
+          redirectToLogin
         }
       }
     } ~ path("login") {
-      redirect(
-        Uri("https://accounts.google.com/o/oauth2/v2/auth")
-          .withQuery(
-            Query(Map(
-              "scope" -> "https://www.googleapis.com/auth/drive.file",
-              "access_type" -> "offline",
-              "include_granted_scopes" -> "true",
-              "state" -> "/",
-              "redirect_uri" -> Config().getString("google.redirect_uri"),
-              "response_type" -> "code",
-              "client_id" -> Config().getString("google.client_id"),
-              "prompt" -> "consent"
-            ))),
-        StatusCodes.TemporaryRedirect
-      )
-    }
+      redirectToLogin
+    } /*~ path("test") {
+      GoogleDriveController.extractAuthData {
+        case Some(authData) => {
+          GoogleDriveController.updateAuthDataIfNeeded(GoogleDriveUploadService.uploadImage(authData)) {
+            _ => complete("something happened")
+          }
+          //GoogleDriveUploadService.upload(authData, "test")
+        }
+        case None => complete("idiot no auth data, lmao")
+      }
+    }*/
   }
+
+
+  val redirectToLogin = redirect(
+    Uri("https://accounts.google.com/o/oauth2/v2/auth")
+      .withQuery(
+        Query(Map(
+          "scope" -> "https://www.googleapis.com/auth/drive.file",
+          "access_type" -> "offline",
+          "include_granted_scopes" -> "true",
+          "state" -> "/",
+          "redirect_uri" -> Config().getString("google.redirect_uri"),
+          "response_type" -> "code",
+          "client_id" -> Config().getString("google.client_id"),
+          "prompt" -> "consent"
+        ))),
+    StatusCodes.TemporaryRedirect
+  )
 
 
 }
@@ -67,7 +93,7 @@ class GoogleDriveController extends AppRestController {
 object GoogleDriveController {
   val AuthDataCookieName = "innocentcookie"
 
-  def getCookie(data: AuthData): HttpCookie = {
+  private def getCookie(data: AuthData): HttpCookie = {
     HttpCookie(
       GoogleDriveController.AuthDataCookieName,
       Base64.encodeBase64URLSafeString(Config.objectMapper.writeValueAsString(data).getBytes(StandardCharsets.UTF_8)),
@@ -86,5 +112,9 @@ object GoogleDriveController {
         }
       }
     })
+  }
+
+  def updateAuthDataIfNeeded[T](dataa: (T, AuthData)): Directive1[T] = {
+    setCookie(getCookie(dataa._2)).tflatMap((_) => provide(dataa._1))
   }
 }
