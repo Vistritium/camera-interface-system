@@ -67,7 +67,14 @@ class ImagesRestController extends AppRestController {
           val timeType = ChronoUnit.valueOf(timeTypeString.toUpperCase)
           Instant.now().minus(count, timeType)
         }
-        restFutureComplete(ImagesRepository.countImagesBetweenDates(min, max))
+        parameter('msgOnEmpty.as[Boolean] ? false) { msgOnEmpty =>
+          restFutureComplete(
+            ImagesRepository.countImagesBetweenDates(min, max).map {
+              case 0 if msgOnEmpty => "EMPTY"
+              case other => other
+            }
+          )
+        }
       }
     }
   }
