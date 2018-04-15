@@ -56,8 +56,6 @@ object GoogleDriveUploadService extends LazyLogging {
       build.writeTo(stream)
 
       val array = stream.toByteArray
-      logger.debug(s"Multipart: \n${new String(array)}")
-
 
       val post = new HttpPost(s"$baseUrl/upload/drive/v3/files?uploadType=multipart")
       post.addHeader("Authorization", s"Bearer ${authData.accessToken}")
