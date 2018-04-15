@@ -17,57 +17,62 @@ import akka.pattern.ask
 class GoogleDriveController extends AppRestController {
 
   override def restRoute: Route = pathPrefix("googledrive") {
-    path("redirect") {
-      parameters("state", "code") {
-        (redirectUrl, code) => {
-          val data = OAuthService.handleCode(code)
-          setCookie(GoogleDriveController.getCookie(data)) {
-            redirect(Uri(redirectUrl), StatusCodes.TemporaryRedirect)
+    get {
+      path("redirect") {
+        parameters("state", "code") {
+          (redirectUrl, code) => {
+            val data = OAuthService.handleCode(code)
+            setCookie(GoogleDriveController.getCookie(data)) {
+              redirect(Uri(redirectUrl), StatusCodes.TemporaryRedirect)
+            }
           }
         }
+      } ~ path("check") {
+        GoogleDriveController.extractAuthData {
+          case Some(_) => complete("yes")
+          case None => complete("no")
+        }
       }
-    } ~ path("check") {
-      GoogleDriveController.extractAuthData {
-        case Some(_) => complete("yes")
-        case None => complete("no")
-      }
-    } ~ path("upload" / IntNumber) { id =>
-      GoogleDriveController.extractAuthData {
-        case Some(authData) => {
-          handleFutureError(onComplete(ImagesRepository.getImage(Left(id)))) {
-            case Some(image) => {
-              handleFutureError(onComplete((Main.imageDataService ? GetData(image.fullpath)).mapTo[GetDataResult])) {
-                imageData => {
-                  GoogleDriveController.updateAuthDataIfNeeded {
-                    GoogleDriveUploadService.uploadImage(authData, image.filename, imageData.bytes)
-                  } { _ =>
-                    complete("ok")
+    } ~ post {
+      path("upload" / Segment) { path =>
+        GoogleDriveController.extractAuthData {
+          case Some(authData) => {
+            handleFutureError(onComplete(ImagesRepository.getImage(Right(path)))) {
+              case Some(image) => {
+                handleFutureError(onComplete((Main.imageDataService ? GetData(image.fullpath)).mapTo[GetDataResult])) {
+                  imageData => {
+                    GoogleDriveController.updateAuthDataIfNeeded {
+                      GoogleDriveUploadService.uploadImage(authData, image.filename, imageData.bytes)
+                    } { _ =>
+                      complete("ok")
+                    }
                   }
                 }
               }
-            }
-            case None => {
-              complete(HttpResponse(status = StatusCodes.NotFound, entity = s"Image of id ${id} does not exist"))
+              case None => {
+                complete(HttpResponse(status = StatusCodes.NotFound, entity = s"Image of fullpath ${path} does not exist"))
+              }
             }
           }
-        }
-        case None => {
-          redirectToLogin
-        }
-      }
-    } ~ path("login") {
-      redirectToLogin
-    } /*~ path("test") {
-      GoogleDriveController.extractAuthData {
-        case Some(authData) => {
-          GoogleDriveController.updateAuthDataIfNeeded(GoogleDriveUploadService.uploadImage(authData)) {
-            _ => complete("something happened")
+          case None => {
+            redirectToLogin
           }
-          //GoogleDriveUploadService.upload(authData, "test")
         }
-        case None => complete("idiot no auth data, lmao")
+      } ~ path("login") {
+        redirectToLogin
       }
-    }*/
+    }
+    /*~ path("test") {
+     GoogleDriveController.extractAuthData {
+       case Some(authData) => {
+         GoogleDriveController.updateAuthDataIfNeeded(GoogleDriveUploadService.uploadImage(authData)) {
+           _ => complete("something happened")
+         }
+         //GoogleDriveUploadService.upload(authData, "test")
+       }
+       case None => complete("idiot no auth data, lmao")
+     }
+   }*/
   }
 
 

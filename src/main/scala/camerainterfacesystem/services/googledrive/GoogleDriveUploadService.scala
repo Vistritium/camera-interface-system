@@ -109,10 +109,6 @@ object GoogleDriveUploadService extends LazyLogging {
         val mimeType = "application/vnd.google-apps.folder"
       }
 
-      /*   val build = MultipartEntityBuilder.create()
-           .addTextBody("1", Config.objectMapper.writeValueAsString(metadata), ContentType.APPLICATION_JSON)
-           .build()*/
-
       val request = new Request.Builder()
         .url(s"$baseUrl/drive/v3/files")
         .post(RequestBody.create(MediaType.parse("application/json; charset=utf-8"),

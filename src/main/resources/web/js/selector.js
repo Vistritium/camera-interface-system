@@ -66,9 +66,9 @@ $(document).ready(function () {
     });
     multiPickerInitialized = true;
 
-    $('#granulation').change(function () {
+/*    $('#granulation').change(function () {
         update()
-    });
+    });*/
 
     var defaultFromDate = moment(window.maxDate).add(-1,"days").toDate();
     window.dateRangeSlider = $('#date-slider').dateRangeSlider({
@@ -129,7 +129,7 @@ function getSelectedHours() {
 }
 
 function getGranulation() {
-    return Number($('#granulation')[0].value);
+    return 1;
 }
 
 function getSelectedPresets() {
@@ -152,6 +152,11 @@ function getDates() {
 function update() {
     getSearchData(true, function (data) {
         updateCount(data);
-        $('#image-counter').css('display', 'initial');
+        if(data > 0){
+            $('#image-counter').css('display', 'initial');
+        } else {
+            $('#image-counter').css('display', 'none');
+        }
+
     });
 }

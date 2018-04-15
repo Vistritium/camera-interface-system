@@ -13,13 +13,17 @@ input {
     width: 100vw;
     top: 0;
     display: none;
+    pointer-events: none;
 }
 
 #image-counter-text {
+    pointer-events: auto;
     opacity: 1;
     background-color: #DDBC95;
 
     width: fit-content;
+    width: -moz-fit-content;
+
     margin-left: auto;
     margin-right: auto;
 
@@ -49,7 +53,7 @@ input {
 }
 
 .select-image-selected {
-    outline: 10px solid rgba(89, 255, 0, 0.72);
+    outline: 10px solid rgba(101, 71, 50, 0.72);
 }
 
 .btn-selector {
@@ -72,8 +76,13 @@ input {
     margin-top: 30px;
 }
 
+#hours2 {
+    margin-bottom: 50px;
+}
+
 .hours {
-    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hours > li {
