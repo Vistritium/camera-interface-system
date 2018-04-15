@@ -32,6 +32,8 @@ class GoogleDriveController extends AppRestController {
           case Some(_) => complete("yes")
           case None => complete("no")
         }
+      } ~ path("login") {
+        redirectToLogin
       }
     } ~ post {
       path("upload" / Segment) { path =>
@@ -58,8 +60,6 @@ class GoogleDriveController extends AppRestController {
             redirectToLogin
           }
         }
-      } ~ path("login") {
-        redirectToLogin
       }
     }
     /*~ path("test") {
