@@ -42,7 +42,8 @@ libraryDependencies ++= Seq(
 javaOptions in Universal ++= Seq(
   "-J-Xmx512m",
   "-J-Xms512m",
-  "-Ddatabase=/data"
+  "-Ddatabase=/data",
+  "-DENV_CONFIG=/data/env.config"
 )
 
 mainClass in Compile := Some("camerainterfacesystem.Main")
