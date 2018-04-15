@@ -60,7 +60,10 @@
 
                         <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
 
-                        <button class="pswp__button pswp__button--favourite" title="Add to favourites"></button>
+                        @if(googleAuth.isDefined) {
+                            <button class="pswp__button pswp__button--favourite" title="Add to favourites"></button>
+                        }
+
                             <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
                             <!-- element will get class pswp__preloader--active when preloader is running -->
                         <div class="pswp__preloader">
