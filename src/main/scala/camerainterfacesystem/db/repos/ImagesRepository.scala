@@ -172,4 +172,11 @@ object ImagesRepository extends SlickRepository {
       .result.headOption)
   }
 
+  def countImagesBetweenDates(min: Instant, max: Instant): Future[Int] = {
+    DB().run(images
+      .filter(_.phototaken > min)
+      .filter(_.phototaken < max)
+      .length.result)
+  }
+
 }

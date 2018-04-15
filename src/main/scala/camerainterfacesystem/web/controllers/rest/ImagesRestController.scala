@@ -3,7 +3,7 @@ package camerainterfacesystem.web.controllers.rest
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{pathPrefix, _}
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.db.util.{Hour, PresetId}
@@ -59,6 +59,15 @@ class ImagesRestController extends AppRestController {
         }
 
         restFutureComplete(result)
+      }
+    } ~ pathPrefix("images" / "countFrom") {
+      path(Segment / LongNumber) { (timeTypeString, count) =>
+        val max = Instant.now().plus(1, ChronoUnit.DAYS)
+        val min = {
+          val timeType = ChronoUnit.valueOf(timeTypeString.toUpperCase)
+          Instant.now().minus(count, timeType)
+        }
+        restFutureComplete(ImagesRepository.countImagesBetweenDates(min, max))
       }
     }
   }
