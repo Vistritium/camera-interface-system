@@ -1,8 +1,5 @@
 package camerainterfacesystem.web.controllers.gcodeparser
 
-import java.io.BufferedReader
-import java.nio.file.{Files, Paths}
-
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.Config
@@ -14,8 +11,6 @@ class GCodeParserController extends AppController {
 
   def decode(gcode: String): String = {
     val lines = gcode.replace("\r", "").split("\n")
-
-
     val stringToTrim = ";SETTING_3"
     val res = lines
       .filter(_.startsWith(stringToTrim))
@@ -48,8 +43,14 @@ class GCodeParserController extends AppController {
   override def route: Route = pathPrefix("gcode") {
     path("parse") {
       post {
-        formField("file") { body =>
-          complete(decode(body))
+        formField("file" ?) { file =>
+          if (file.isDefined && file.get.nonEmpty) {
+            complete(decode(file.get))
+          } else {
+            formField("text") { text =>
+              complete(decode(text))
+            }
+          }
         }
       }
     } ~ get {
