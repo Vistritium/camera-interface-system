@@ -57,6 +57,10 @@ object ImagesService extends AppService {
     } yield deletedFromCloud.isDefined
   }
 
+  def getSpecificDates(dates: List[Instant], preset: Int): Future[List[(Instant, Option[Image])]] = {
+      ImagesRepository.getClosestImagesToDates(dates, preset)
+  }
+
   private def getBytes(images: Seq[(Image)]) = {
     Future.sequence(images.map(image => (Main.imageDataService ? GetData(image.fullpath))
       .mapTo[GetDataResult].map(res => (image, res.bytes))))

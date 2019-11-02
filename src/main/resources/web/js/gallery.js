@@ -44,27 +44,3 @@ function getImageSrc(image) {
 function getImageText(image) {
     return moment(image.phototaken).format('LLLL');
 }
-
-$(document).ready(function () {
-    $('.pswp__button--favourite').click(function () {
-        console.log(window.gallery.currItem);
-        var fullPath = window.gallery.currItem.fullpath;
-        console.log("fullPath: " + fullPath)
-
-        $.ajax({
-            url: "/api/googledrive/upload/" + encodeURIComponent(fullPath),
-            method: 'POST'
-        }).done(function (data, status) {
-            console.log("success")
-            console.log(data);
-            $('#favourite-success-modal').modal('show')
-        }).fail(function (data, status) {
-            console.log("failure")
-            console.log(data);
-            console.log(status);
-            $('#favourite-failure-modal').modal('show')
-        })
-
-
-    })
-});

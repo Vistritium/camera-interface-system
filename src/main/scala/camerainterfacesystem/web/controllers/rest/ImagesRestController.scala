@@ -76,6 +76,14 @@ class ImagesRestController extends AppRestController {
           )
         }
       }
+    } ~ path("imagesClosestToDate" / "preset" / IntNumber) { preset =>
+      parameter(
+        'dates.as(Unmarshallers.commaSeparatedEpochDates),
+      ) { dates =>
+        handleFutureError(onComplete(ImagesRepository.getClosestImagesToDates(dates.toList, preset))) {
+          a => restComplete(a)
+        }
+      }
     }
   }
 

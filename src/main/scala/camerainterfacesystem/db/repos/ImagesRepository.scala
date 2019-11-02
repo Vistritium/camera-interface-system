@@ -100,10 +100,11 @@ object ImagesRepository extends SlickRepository {
     DB().run(sql)
   }
 
-  def getImagesForPresetAndHour(presetId: PresetId, hour: Hour,
-                                min: Option[Instant] = None,
-                                max: Option[Instant] = None)
-                               (implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
+  def getImagesForPresetAndHour(
+    presetId: PresetId, hour: Hour,
+    min: Option[Instant] = None,
+    max: Option[Instant] = None)
+    (implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
     PresetsRepository.getPresetById(presetId).flatMap {
       case None => throw new IllegalStateException("Unknown preset id")
       case Some(value) => {
@@ -148,6 +149,22 @@ object ImagesRepository extends SlickRepository {
       .filter(_._1.phototaken <= max)
     /*.zipWithIndex
     .map(_._1)*/
+  }
+
+  def getClosestImagesToDates(dates: List[Instant], preset: Int)(implicit executionContext: ExecutionContext)
+  : Future[List[(Instant, Option[Image])]] = {
+    val queries = dates.map { date =>
+      val dateEpochMillis = date.toEpochMilli
+      sql"""
+        SELECT *
+        FROM images
+        WHERE presetId = $preset
+        ORDER BY abs(photoTaken - $dateEpochMillis) ASC
+        LIMIT 1;
+      """.as[Image].headOption.map(image => date -> image)
+    }
+
+    DB().run(DBIO.sequence(queries).transactionally)
   }
 
   def getAvailableHours(): Future[Seq[Int]] = {

@@ -17,8 +17,3 @@ body {
 .modal {
     z-index: 9000;
 }
-
-.pswp__button--favourite{
-    background-image: url(/web/icons/fav.png) !important;
-    background-size:     cover !important;
-}

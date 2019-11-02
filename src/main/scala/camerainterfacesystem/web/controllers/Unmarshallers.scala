@@ -18,6 +18,11 @@ object Unmarshallers {
     OffsetDateTime.parse(s, dateTimeFormatter).toInstant
   })
 
+  val commaSeparatedEpochDates: Unmarshaller[String, Seq[Instant]] = Unmarshaller.strict {
+    case s if s.isEmpty => Seq.empty
+    case s => s.split(",").map(_.toLong).map(Instant.ofEpochMilli)
+  }
+
   val seqStringUnmarshaller: Unmarshaller[String, Seq[String]] = new Unmarshaller[String, Seq[String]] {
     override def apply(value: String)(implicit ec: ExecutionContext, materializer: Materializer): Future[Seq[String]] = {
       Future {
