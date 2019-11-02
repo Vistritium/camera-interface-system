@@ -35,7 +35,9 @@ class WebServer extends AppActor {
   require(controllers.nonEmpty)
   private val route = controllers.map(_.route).reduce(_ ~ _)
 
-  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", Config.config.getInt("port"))
+  private val port: Int = Config.config.getInt("port")
+  logger.info(s"Server started on $port")
+  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", port)
 
   override def receive = {
     case _ =>
