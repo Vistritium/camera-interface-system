@@ -3,7 +3,7 @@ package camerainterfacesystem.services
 import java.time.Instant
 
 import akka.pattern.ask
-import camerainterfacesystem.Main
+import camerainterfacesystem.{Config, Main}
 import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
@@ -12,6 +12,8 @@ import camerainterfacesystem.db.util.{Hour, PresetId}
 import scala.concurrent.{ExecutionContext, Future}
 
 object ImagesService extends AppService {
+
+  private val coolHour: Int = Config.config.getInt("defaultHour")
 
   def getNewestSnaps(hour: Option[Int] = None)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset, Array[Byte])]] = {
     for {
@@ -58,11 +60,20 @@ object ImagesService extends AppService {
   }
 
   def getSpecificDates(dates: List[Instant], preset: Int): Future[List[(Instant, Option[Image])]] = {
-      ImagesRepository.getClosestImagesToDates(dates, preset)
+    ImagesRepository.getClosestImagesToDates(dates, preset)
   }
 
   private def getBytes(images: Seq[(Image)]) = {
     Future.sequence(images.map(image => (Main.imageDataService ? GetData(image.fullpath))
       .mapTo[GetDataResult].map(res => (image, res.bytes))))
+  }
+
+  def getPreview(): Future[Seq[Image]] = {
+    for {
+      availableHours <- ImagesRepository.getAvailableHours()
+      closestHour = availableHours.minBy(v => math.abs(v - coolHour))
+      newestSnaps <- ImagesService.getNewestSnaps(Some(closestHour))
+      images = newestSnaps.map(_._1)
+    } yield images
   }
 }

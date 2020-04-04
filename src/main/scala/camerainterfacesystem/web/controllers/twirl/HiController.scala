@@ -23,20 +23,18 @@ class HiController extends AppController with LazyLogging {
   override def route: Route = pathSingleSlash {
     get {
       val res = for {
-        availableHours <- ImagesRepository.getAvailableHours()
-        closestHour = availableHours.minBy(v => math.abs(v - coolHour))
-        newestSnaps <- ImagesService.getNewestSnaps(Some(closestHour))
+        preview <- ImagesService.getPreview()
+        hours <- ImagesRepository.getAvailableHours()
         minDate <- ImagesRepository.getEarliestDate()
         maxDate <- ImagesRepository.getLatestDate()
-      } yield (availableHours, newestSnaps, minDate, maxDate)
+      } yield (preview, hours, minDate, maxDate)
 
       handleFutureError(onComplete(res)) {
         res => {
-          val images = res._2.map(_._1)
           val hours = res._1
           htmlToResponseMarshalable(index(
-            images,
-            hours,
+            res._1,
+            res._2,
             instantIsoDateFormatter.format(res._3.getOrElse(Instant.now().minus(365, ChronoUnit.DAYS))),
             instantIsoDateFormatter.format(res._4.getOrElse(Instant.now()))
           ))

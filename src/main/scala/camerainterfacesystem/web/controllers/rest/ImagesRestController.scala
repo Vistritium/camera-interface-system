@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Directives.{pathPrefix, _}
 import akka.http.scaladsl.server.Route
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
 import camerainterfacesystem.db.util.{Hour, PresetId}
+import camerainterfacesystem.services.ImagesService
 import camerainterfacesystem.utils.PresetModelUtils
 import camerainterfacesystem.web.controllers.Unmarshallers
 import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, MetaImage, PresetWithCountAndHour}
@@ -78,12 +79,14 @@ class ImagesRestController extends AppRestController {
       }
     } ~ path("imagesClosestToDate" / "preset" / IntNumber) { preset =>
       parameter(
-        'dates.as(Unmarshallers.commaSeparatedEpochDates),
+        'dates.as(Unmarshallers.commaSeparatedEpochDates)
       ) { dates =>
         handleFutureError(onComplete(ImagesRepository.getClosestImagesToDates(dates.toList, preset))) {
           a => restComplete(a)
         }
       }
+    } ~ path("preview") {
+      handleFutureError(onComplete(ImagesService.getPreview()))(restComplete)
     }
   }
 

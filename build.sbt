@@ -2,7 +2,7 @@ name := "camera-interface-system"
 
 version := "0.1"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.10"
 
 resolvers += "Adobe" at "https://repo.adobe.com/nexus/content/repositories/public/"
 resolvers += Resolver.bintrayRepo("hseeberger", "maven")
