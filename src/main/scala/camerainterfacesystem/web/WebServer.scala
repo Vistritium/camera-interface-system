@@ -2,9 +2,10 @@ package camerainterfacesystem.web
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.headers.`Cache-Control`
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import camerainterfacesystem.{AppActor, Config}
+import camerainterfacesystem.{AppActor, CORSHandler, Config}
 import camerainterfacesystem.web.controllers.rest.AppRestController
 import org.reflections.Reflections
 import org.reflections.scanners.{SubTypesScanner, TypeAnnotationsScanner}
@@ -33,7 +34,7 @@ class WebServer extends AppActor {
   }
 
   require(controllers.nonEmpty)
-  private val route = controllers.map(_.route).reduce(_ ~ _)
+  private val route = CORSHandler.corsHandler(controllers.map(_.route).reduce(_ ~ _))
 
   private val port: Int = Config.config.getInt("port")
   logger.info(s"Server started on $port")

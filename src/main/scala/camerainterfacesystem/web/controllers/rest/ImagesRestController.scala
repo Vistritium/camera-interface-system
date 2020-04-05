@@ -87,6 +87,17 @@ class ImagesRestController extends AppRestController {
       }
     } ~ path("preview") {
       handleFutureError(onComplete(ImagesService.getPreview()))(restComplete)
+    } ~ path("hours") {
+      handleFutureError(onComplete(ImagesRepository.getAvailableHours()))(restComplete)
+    } ~ path("bounds") {
+      val bounds = for {
+        minDate <- ImagesRepository.getEarliestDate()
+        maxDate <- ImagesRepository.getLatestDate()
+      } yield new {
+        val min = minDate
+        val max = maxDate
+      }
+      handleFutureError(onComplete(bounds))(restComplete)
     }
   }
 

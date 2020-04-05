@@ -1,0 +1,20 @@
+.preview-image {
+    width: calc(32vw - 0.5rem);
+    border-style: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.preview-image-container {
+    justify-content: space-around;
+    flex-wrap: wrap;
+    display: flex;
+    margin: auto;
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.preview-image-space-filler {
+    width:calc(32vw - 0.5rem);
+    height:0;
+}

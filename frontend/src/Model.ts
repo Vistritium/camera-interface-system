@@ -7,9 +7,14 @@ export interface Image {
     hourTaken: Number
 }
 
+export interface Bounds {
+    min: Date,
+    max: Date
+}
 
 export interface Data {
 
     preview: Array<Image>
-
+    hours: Array<Number>
+    bounds: Bounds
 }
