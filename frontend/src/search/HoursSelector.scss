@@ -1,0 +1,83 @@
+@import "../Shared";
+
+.hours-selector-container {
+  display: flex;
+  justify-content: center;
+}
+
+.hour-selector-container {
+  margin: 20px;
+}
+
+.hour-selector-elem {
+  color: black;
+  cursor: default;
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+.hour-selector-elem ::selection {
+  background: none;
+}
+
+
+.hour-selector-elem-selected {
+  /*background-color: blue;*/
+}
+
+.hour-selector-elem-not-existing {
+  display: none;
+}
+
+
+$fxd: 30px;
+$disabled: radial-gradient(transparent $fxd, darken($background_color, 10%) $fxd);
+$selected_color: $search_selection_color;
+$not_selected_color: rgb(156, 150, 153);
+$selected: radial-gradient(transparent $fxd, $selected_color $fxd);
+$selected_second: radial-gradient(transparent $fxd, darken($selected_color, 5%) $fxd);
+$not_selected: radial-gradient(transparent $fxd, $not_selected_color $fxd);
+$not_selected_second: radial-gradient(transparent $fxd, darken($not_selected_color, 5%) $fxd);
+$switch_color: mix($selected_color, $not_selected_color);
+
+.hour-selector-container li > div[selection] {
+  border: transparent solid 10px;
+}
+
+.hour-selector-container li > div[selection="selected"] {
+  background: $selected;
+}
+
+.hour-selector-container li > div[selection="selected"][is_second="true"] {
+  background: $selected_second;
+}
+
+.hour-selector-container li > div[selection="not_selected"] {
+  background: $not_selected;
+}
+
+.hour-selector-container li > div[selection="not_selected"][is_second="true"] {
+  background: $not_selected_second;
+}
+
+.hour-selector-container li > div[selection]:hover {
+  border: aqua solid 10px;
+}
+
+.hour-selector-container li > div[selection]:active {
+  background: radial-gradient(transparent $fxd, $switch_color $fxd);
+}
+
+.hour-selector-container li > div[selection="disabled"] {
+  background: $disabled;
+  border: transparent solid 10px;
+}
+
+.hour-selector-container li > div[selection="disabled"]:hover {
+  background: $disabled;
+  border: transparent solid 10px;
+}
+

@@ -1,0 +1,34 @@
+@import "../Shared";
+
+.preset-selector-image {
+  border-style: solid;
+  border-width: 6px;
+  border-color: transparent;
+  max-width: 100%;
+}
+
+.preset-selector-image-selected {
+  border-color: $search_selection_color;
+}
+
+.preset-selector-image-container {
+  justify-content: space-between;
+  width: 1000px;
+  display: grid;
+  grid-gap: 10px;
+  margin: auto;
+  text-align: left;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.preset-selector-image-space-filler {
+  width: 280px;
+  height: 0;
+}
+
+
+.preset-selector-button {
+  width: 100%;
+}
+
+

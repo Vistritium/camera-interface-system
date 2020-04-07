@@ -2,6 +2,10 @@ import {Data, Image} from "../Model";
 import React, {useEffect, useState} from "react"
 import {PresetSelector} from "./PresetSelector";
 import {SearchState} from "./SearchState";
+import {HoursSelector} from "./HoursSelector";
+import "./Search.css"
+import {DatesSelector} from "./DatesSelector";
+import moment from "moment-timezone"
 
 type SearchProps = {
     data: Data
@@ -12,26 +16,47 @@ export const Search = ({data}: SearchProps) => {
 
     const [selectedPresets, setSelectedPresets] = useState<Array<Image>>();
     const [selectedHours, setSelectedHours] = useState<Array<Number>>();
-    const [from, setFrom] = useState<Date>();
-    const [to, setTo] = useState<Date>();
+    const [from, setFrom] = useState<Date | undefined>();
+    const [to, setTo] = useState<Date | undefined>();
 
     const handleUpdateSelectedPresets = (images: Array<Image>) => {
         setSelectedPresets(images)
     };
 
+    const handleUpdateSelectedHours = (hours: Array<Number>) => {
+        setSelectedHours(hours)
+    };
+
+    const handleUpdateFromDate = (from?: Date) => {
+        console.log("setting from: " + from);
+        setFrom(from)
+    };
+
+    const handleUpdateToDate = (to?: Date) => {
+        console.log("setting to: " + to);
+        setTo(to)
+    };
+
     useEffect(() => {
         setSelectedPresets([]);
         setSelectedHours([]);
-        setFrom(new Date());
-        setTo(new Date());
+        setFrom(moment(data.bounds.max).add(-5, 'days').toDate());
+        setTo(data.bounds.max);
     }, [data]);
 
     if (!data) {
+        console.log("no data");
         return <div/>
     } else return (
         <div className="container">
             {selectedPresets ? <PresetSelector selectedPresets={selectedPresets} presets={data.preview}
                                                updateSelectedPresets={handleUpdateSelectedPresets}/> : null}
+            {selectedHours ? < HoursSelector hours={data.hours} selectedHours={selectedHours}
+                                             updateSelectedHours={handleUpdateSelectedHours}/> : null}
+            < DatesSelector minDate={data.bounds.min} maxDate={data.bounds.max} from={from}
+                            to={to} updateFrom={handleUpdateToDate}
+                            updateTo={handleUpdateFromDate}/>
+
         </div>
     )
 };

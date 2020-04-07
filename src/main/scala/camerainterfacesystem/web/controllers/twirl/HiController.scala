@@ -45,5 +45,11 @@ class HiController extends AppController with LazyLogging {
 }
 
 
+object DaMain {
 
+  def main(args: Array[String]): Unit = {
+    List("a", "b", "c")
+  }
+
+}
 

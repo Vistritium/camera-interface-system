@@ -1,6 +1,6 @@
 import {Image} from "../Model";
 import React from "react"
-import "./PresetSelector.css"
+import "./PresetSelector.scss"
 import {imageAddress} from "../Server";
 import {SearchState} from "./SearchState";
 
@@ -13,7 +13,7 @@ type PresetSelector = {
 
 export const PresetSelector = ({presets, updateSelectedPresets, selectedPresets}: PresetSelector) => {
     return (
-        <div className="preset-selector-rows">
+        <div className="search-input-group">
             <div className="row">
                 <div className="preset-selector-image-container">
                     {
@@ -38,12 +38,12 @@ export const PresetSelector = ({presets, updateSelectedPresets, selectedPresets}
 
             </div>
             <div className="row">
-                <div className="preset-selector-button-container">
+                <div className="selector-button-container">
                     <button type="button" className="btn btn-secondary preset-selector-button"
-                            onClick={() => updateSelectedPresets(presets)}>Wszystkie
+                            onClick={() => updateSelectedPresets(presets)}>Zaznacz wszystko
                     </button>
                     <button type="button" className="btn btn-secondary preset-selector-button"
-                            onClick={() => updateSelectedPresets([])}>Żaden
+                            onClick={() => updateSelectedPresets([])}>Odznacz wszystko
                     </button>
                 </div>
             </div>
