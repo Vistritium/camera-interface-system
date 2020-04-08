@@ -1,11 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import logo from './logo.svg';
 import './App.scss';
-import {Data, Image} from "./Model";
+import {Data, Image, ImageEntry} from "./Model";
 import * as Server from "./Server"
 import {Preview} from "./Preview"
 import {Search} from "./search/Search";
 
+
+export type RunGallery = (images: Array<ImageEntry>) => void
 
 function App() {
 
@@ -31,24 +33,30 @@ function App() {
                 }
             };
             console.log(data);
-            setData(data);
+                setData(data);
         };
         fetchData();
     }, []);
 
+    const runGallery: RunGallery = (images => {
+        console.log("Running gallery" + JSON.stringify(images))
+    })
+
     if (!data) {
-        return <div/>
+        return <div>
+            <h1>Loading</h1>
+        </div>
     } else {
         return (
             <div className="App">
                 < Preview images={data?.preview}/>
                 <hr/>
-                < Search data={data}/>
+                < Search data={data} runGallery={runGallery}/>
             </div>
         );
     }
 
-
 }
 
 export default App;
+

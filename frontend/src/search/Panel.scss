@@ -1,0 +1,48 @@
+@import "../Shared";
+
+.search-panel {
+  position: fixed;
+  z-index: 999;
+  height: fit-content;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.search-pannel-inner {
+  pointer-events: auto;
+  opacity: 1;
+  background-color: transparentize(darken($background_color, 15%), 0.3);
+  backdrop-filter: blur(10px);
+  width: 150px;
+
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5px;
+
+  text-align: center;
+  font-size: x-large;
+  color: #654732;
+
+  border-radius: 70px;
+  padding: 15px;
+
+  cursor: pointer;
+
+  display: flex;
+  justify-content: space-evenly;
+}
+
+
+
+.search-pannel-inner-icon{
+  //width: 30px;
+  margin-left: 10px;
+}
+
+.search-pannel-inner-text{
+  width: 200px
+}

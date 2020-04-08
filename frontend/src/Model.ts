@@ -18,3 +18,8 @@ export interface Data {
     hours: Array<Number>
     bounds: Bounds
 }
+
+export interface ImageEntry {
+    fullpath: String
+    phototaken: Date
+}
