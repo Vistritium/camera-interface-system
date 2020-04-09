@@ -48,8 +48,6 @@ javaOptions in Universal ++= Seq(
 
 mainClass in Compile := Some("camerainterfacesystem.Main")
 
-enablePlugins(SbtTwirl)
-
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 dockerRepository := Some("nowicki.azurecr.io")
@@ -58,3 +56,4 @@ dockerExposedPorts := Seq(8080)
 dockerExposedVolumes := Seq("/data")
 dockerUpdateLatest := true
 
+Compile / unmanagedResourceDirectories += baseDirectory.value / "frontend" / "build"

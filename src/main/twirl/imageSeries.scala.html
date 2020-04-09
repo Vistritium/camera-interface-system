@@ -1,6 +1,0 @@
-@import camerainterfacesystem.db.Tables.Image
-@(images: Seq[Image])
-@for(image <- images) {
-    <img class="regular-image" src="/images/download/@(image.fullpath)" onclick="quickPreset(@image.presetid)">
-}
-
