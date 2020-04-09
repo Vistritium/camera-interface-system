@@ -20,11 +20,12 @@
     "node-sass": "^4.13.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-image-gallery": "^1.0.7",
     "react-pie-menu": "^0.2.5",
     "react-scripts": "3.4.1",
     "rsuite": "^4.3.3",
     "styled-components": "^5.0.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -46,5 +47,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/moment-timezone": "^0.5.13",
+    "@types/react-image-gallery": "^0.9.2"
   }
 }

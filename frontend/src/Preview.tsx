@@ -1,12 +1,25 @@
 import React from "react"
 import {Image} from "./Model";
-import {imageAddress} from "./Server";
-import './Preview.css'
+import './Preview.scss'
+import {RunGallery} from "./App";
+import * as Server from "./Server"
+import moment from "moment-timezone"
 
 type PreviewProps = {
-    images: Array<Image>
+    images: Array<Image>,
+    runGallery: RunGallery,
+    max: Date
 }
-export const Preview = ({images}: PreviewProps) => {
+export const Preview = ({images, runGallery, max}: PreviewProps) => {
+
+    const onClick = (image: Image) => {
+        const from = moment(max).add(-14, 'days')
+        const execute = async () => {
+            const data = await Server.fetchImages(from.toDate(), max, [16], [image])
+            runGallery(data)
+        }
+        execute()
+    }
 
     if (!images) {
         return (<div>loading</div>)
@@ -17,9 +30,8 @@ export const Preview = ({images}: PreviewProps) => {
                 {
                     images.map((image, i) => {
                         return (
-
-                            <img key={image.id.toString()} src={imageAddress(image)} alt="Loading image"
-                                 className="preview-image"/>
+                            <img key={image.id.toString()} src={Server.imageAddress(image)} alt="Loading image"
+                                 className="preview-image" onClick={() => onClick(image)}/>
 
                         )
                     })}

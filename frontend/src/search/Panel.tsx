@@ -21,22 +21,11 @@ export const Panel = ({bounds: {from, to}, hours, presets, runGallery}: Panel) =
 
     const [count, setCount] = useState<Number | undefined>();
 
-    type FetchType = "count" | "images"
-    const imageUrl = (type: FetchType) => {
-        const toPlusDay = moment(to).add(1, 'days')
-        return Server.address("/api/images") + "?" + new URLSearchParams({
-            "min": from.toISOString(),
-            "max": toPlusDay.toISOString(),
-            "hours": hours.join(","),
-            "presets": presets.map(p => p.presetid).join(","),
-            "count": type == "count" ? "true" : "false"
-        });
-    }
 
     useEffect(() => {
         const fetchData = async () => {
             if (presets.length > 0 && hours.length > 0) {
-                const data = await fetch(imageUrl("count"))
+                const data = await fetch(Server.imageUrl("count", from, to, hours, presets))
                 if (data.ok) {
                     const text = await data.text()
                     setCount(parseInt(text))
@@ -48,13 +37,7 @@ export const Panel = ({bounds: {from, to}, hours, presets, runGallery}: Panel) =
 
     const onClick = () => {
         const execute = async () => {
-            const response = await fetch(imageUrl("images"))
-            const json = await response.json()
-            // @ts-ignore
-            const data: Array<ImageEntry> = json.map(e => ({
-                fullpath: e.fullpath,
-                phototaken: new Date(e.phototaken)
-            }))
+            const data = await Server.fetchImages(from, to, hours, presets)
             runGallery(data)
         }
         execute()
