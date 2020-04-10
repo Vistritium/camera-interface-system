@@ -14,6 +14,6 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'nowicki'
-    repository: 'camera-interface-system'
+    repository: 'nowicki/camera-interface-system'
     command: 'push'
     tags: 'latest'
