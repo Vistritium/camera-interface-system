@@ -8,7 +8,7 @@ resolvers += "Adobe" at "https://repo.adobe.com/nexus/content/repositories/publi
 resolvers += Resolver.bintrayRepo("hseeberger", "maven")
 
 libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % "1.3.1",
+  "com.typesafe" % "config" % "1.4.0",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "org.apache.httpcomponents" % "httpclient" % "4.5.3",
   "org.apache.httpcomponents" % "httpmime" % "4.5.5",
