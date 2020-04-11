@@ -9,6 +9,15 @@ container:
 
 
 steps:
+- task: Npm@1
+  inputs:
+    workingDir: 'frontend'
+    command: 'install'
+- task: Npm@1
+  inputs:
+    workingDir: 'frontend'
+    command: 'custom'
+    customCommand: 'run build'
 - script: sbt docker:publishLocal
   displayName: 'Compile scala and build docker'
 - task: Docker@2
