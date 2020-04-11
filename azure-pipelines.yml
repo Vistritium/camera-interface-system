@@ -9,12 +9,13 @@ container:
 
 
 steps:
-
 - task: Npm@1
   inputs:
+    workingDir: 'frontend'
     command: 'install'
 - task: Npm@1
   inputs:
+    workingDir: 'frontend'
     command: 'custom'
     customCommand: 'run build'
 - script: sbt docker:publishLocal
