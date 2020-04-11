@@ -45,6 +45,6 @@ export const DatesSelector = ({from, maxDate, minDate, to, updateFrom, updateTo}
         <DateRangePicker disabledDate={DateRangePicker.allowedRange(minDate, maxDateUpdated)}
             // @ts-ignore
                          onChange={onChange}
-                         defaultValue={[from, toDefault]} locale={Locale} isoWeek={true}/>
+                         defaultValue={[from, toDefault]} locale={Locale} isoWeek={true} cleanable={false}/>
     </div>
 };
