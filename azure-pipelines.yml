@@ -26,3 +26,10 @@ steps:
     repository: 'nowicki/camera-interface-system'
     command: 'push'
     tags: 'latest'
+- task: Kubernetes@1
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceEndpoint: 'marisa'
+    command: 'rollout'
+    arguments: 'restart deployment/camera-interface-system'
+
