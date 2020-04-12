@@ -1,0 +1,54 @@
+@import "../Shared";
+
+.gcode .alert {
+  font-size: 30px;
+}
+
+.gcode-result {
+  background-color: #eeeeee;
+}
+
+.gcode {
+
+  margin-top: 30px;
+
+  display: flex;
+  justify-content: center;
+
+
+}
+
+.gcode-button-container {
+  margin-bottom: 10px;
+}
+
+.gcode-text-hidden {
+  display: none;
+}
+
+.gcode-inline {
+  display: block;
+}
+
+.gcode-inner {
+  display: block;
+  width: 1300px;
+}
+
+.gcode-button {
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  text-align: center;
+
+}
+
+.gcode-button button {
+  height: 60px;
+  width: 200px;
+}
+
+.gcode-copy {
+  margin-bottom: 10px;
+}

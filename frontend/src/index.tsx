@@ -5,9 +5,10 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'rsuite/dist/styles/rsuite-default.css';
+import {Router} from "./Router";
 
 ReactDOM.render(
-    <App />,
+    <Router />,
   document.getElementById('root')
 );
 
