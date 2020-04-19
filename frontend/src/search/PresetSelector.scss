@@ -18,7 +18,14 @@
   grid-gap: 10px;
   margin: auto;
   text-align: left;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(40vw, 1fr));
+
+}
+
+@media (min-width: $breakpoint_tablet) {
+  .preset-selector-image-container {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
 .preset-selector-image-space-filler {

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from "react"
 import {PresetSelector} from "./PresetSelector";
 import {SearchState} from "./SearchState";
 import {HoursSelector} from "./HoursSelector";
-import "./Search.css"
+import "./Search.scss"
 import {DatesSelector} from "./DatesSelector";
 import moment from "moment-timezone"
 import {Panel} from "./Panel";
