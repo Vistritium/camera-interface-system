@@ -7,6 +7,33 @@
   max-width: 100%;
 }
 
+.preset-selector-preset-image-container {
+  position: relative;
+}
+
+.preset-selector-preset-container {
+  pointer-events: none;
+  width: 100%;
+  margin-top: 6px;
+  text-align: center;
+  position: absolute;
+}
+
+.preset-selector-preset {
+  display: inline-block;
+  line-height: initial;
+  padding-left: 5px;
+  padding-right: 5px;
+  background-color: transparentize(#000000, 0.5) ;
+  backdrop-filter: blur(3px);
+  color: #76f30a;
+  vertical-align: middle;
+  height: 25px;
+  text-align: center;
+  font-size: medium;
+  font-weight: bold;
+}
+
 .preset-selector-image-selected {
   border-color: $search_selection_color;
 }

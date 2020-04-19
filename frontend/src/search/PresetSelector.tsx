@@ -1,4 +1,4 @@
-import {Image, Preset} from "../Model";
+import {getName, Image, Preset} from "../Model";
 import React from "react"
 import "./PresetSelector.scss"
 import {imageAddress} from "../Server";
@@ -28,10 +28,15 @@ export const PresetSelector = ({presets, updateSelectedPresets, selectedPresets}
                             };
 
                             return (
-
-                                <img key={i} src={imageAddress(preset.image)} alt="Loading image"
-                                     className={"preset-selector-image " + selectedClass} onClick={onClick}/>
-
+                                <div className="preset-selector-preset-image-container">
+                                    <div className="preset-selector-preset-container">
+                                        <div className="preset-selector-preset">
+                                            {getName(preset)}
+                                        </div>
+                                    </div>
+                                    <img key={i} src={imageAddress(preset.image)} alt="Loading image"
+                                         className={"preset-selector-image " + selectedClass} onClick={onClick}/>
+                                </div>
                             )
                         })}
                 </div>
