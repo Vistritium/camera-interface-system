@@ -2,26 +2,26 @@ package camerainterfacesystem.web
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.`Cache-Control`
 import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import camerainterfacesystem.web.controllers.FrontendSpecialController
-import camerainterfacesystem.{AppActor, CORSHandler, Config}
 import camerainterfacesystem.web.controllers.rest.AppRestController
+import camerainterfacesystem.CORSHandler
+import camerainterfacesystem.configuration.ConfigLoader
+import com.google.inject.{Inject, Injector, Singleton}
+import com.typesafe.scalalogging.LazyLogging
 import org.reflections.Reflections
 import org.reflections.scanners.{SubTypesScanner, TypeAnnotationsScanner}
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder}
 
-import scala.collection.JavaConverters._
+import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
 
-class WebServer extends AppActor {
-
-  private implicit val system: ActorSystem = context.system
-  private implicit val materializer: ActorMaterializer = {
-    val mat = ActorMaterializer()(context)
-    WebServer.webMaterializer = mat
-    mat
-  }
+@Singleton
+class WebServer @Inject()(
+  private implicit val system: ActorSystem,
+  injector: Injector
+) extends LazyLogging {
 
   private val controllers: List[AppController] = {
     val reflections = new Reflections(new ConfigurationBuilder()
@@ -31,7 +31,7 @@ class WebServer extends AppActor {
       .filterNot(_ == classOf[AppController])
       .filterNot(_ == classOf[AppRestController])
     logger.info(s"Found following controllers: ${set.mkString("\n", "\n", "")}")
-    set.map(_.newInstance().asInstanceOf[AppController]).toList
+    set.map(clazz => injector.getInstance(clazz).asInstanceOf[AppController]).toList
   }
 
   require(controllers.nonEmpty)
@@ -41,18 +41,14 @@ class WebServer extends AppActor {
     (standardControllers ~ frontendSpecialController.route)
   }
 
-  private val port: Int = Config.config.getInt("port")
-  logger.info(s"Server started on $port")
-  private val bindingFuture = Http().bindAndHandle(route, "0.0.0.0", port)
-
-  override def receive = {
-    case _ =>
+  def start(): Future[Http.ServerBinding] = {
+    val port: Int = ConfigLoader.config.getInt("port")
+    logger.info(s"Server started on $port")
+    Http().bindAndHandle(route, "0.0.0.0", port)
   }
 
+
 }
 
-object WebServer {
-  var webMaterializer: ActorMaterializer = _
-}
 
 

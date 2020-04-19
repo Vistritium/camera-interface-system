@@ -4,12 +4,17 @@ import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.util.{Count, Hour, PresetId}
 import camerainterfacesystem.db.{DB, Tables}
 import camerainterfacesystem.utilmodel.HoursImageCount
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
 import slick.dbio.DBIOAction
 import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object PresetsRepository extends SlickRepository {
+@Singleton
+class PresetsRepository @Inject()(
+  protected val db: DB
+) extends SlickRepository with LazyLogging {
 
   private val presets = Tables.Presets
   private val inserQuery = presets returning presets.map(_.id) into ((preset, id) => preset.copy(id = id))
@@ -20,21 +25,21 @@ object PresetsRepository extends SlickRepository {
 
   def addPreset(preset: Preset): Future[Preset] = {
     val query = inserQuery += preset
-    DB().run(query)
+    db().run(query)
   }
 
   def getPresetsForImage(image: Image): Future[Seq[Preset]] = {
     val query = presets.filter(_.id === image.id)
-    DB().run(query.result)
+    db().run(query.result)
   }
 
   def findPresetByName(name: String): Future[Option[Preset]] = {
     val query = presets.filter(_.name === name)
-    DB().run(query.result.headOption)
+    db().run(query.result.headOption)
   }
 
   def getPresetById(id: PresetId): Future[Option[Preset]] =
-    DB().run(presets.filter(_.id === id.presetId).result.headOption)
+    db().run(presets.filter(_.id === id.presetId).result.headOption)
 
   def findPresetByNameOrCreateNew(name: String)(implicit executionContext: ExecutionContext): Future[Preset] = {
     val query = presets.filter(_.name === name).result.headOption.flatMap {
@@ -42,12 +47,16 @@ object PresetsRepository extends SlickRepository {
       case None => inserQuery += Preset(0, name, None)
     }.withPinnedSession
 
-    val eventualResult: Future[Preset] = DB().run(query)
+    val eventualResult: Future[Preset] = db().run(query)
     eventualResult
   }
 
+  def getAllPresets()(implicit executionContext: ExecutionContext): Future[Seq[Preset]] = {
+    db().run(presets.result)
+  }
+
   def getAllPresetsGroupedByHour()(implicit executionContext: ExecutionContext): Future[Seq[(Preset, Count, Hour)]] = {
-    DB().run {
+    db().run {
       sql"""
             SELECT presets.*, COUNT(images.id), images.hourTaken FROM presets
             LEFT JOIN images ON presets.id = images.presetId
@@ -57,7 +66,7 @@ object PresetsRepository extends SlickRepository {
   }
 
   def getPresetsHours(presetId: Int)(implicit executionContext: ExecutionContext): Future[Seq[HoursImageCount]] = {
-    DB().run(
+    db().run(
       sql"""
             SELECT images.hourTaken, count(images.id) FROM presets
             LEFT JOIN images ON presets.id = images.presetId

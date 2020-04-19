@@ -3,20 +3,25 @@ package camerainterfacesystem.db
 import java.nio.file.{Files, Paths}
 import java.util.concurrent.Executors
 
-import slick.jdbc.SQLiteProfile.api._
-import camerainterfacesystem.Config
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.config.Config
+import com.typesafe.scalalogging.LazyLogging
 import org.flywaydb.core.Flyway
 import slick.jdbc
 import slick.jdbc.SQLiteProfile
+import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.ExecutionContext
 
-object DB {
+@Singleton
+class DB @Inject()(
+  config: Config
+) extends LazyLogging {
 
   private val DatabaseFileName = "db.sqlite"
 
   private val databaseFile = {
-    val str = Config().getString("database")
+    val str = config.getString("database")
     val path = Paths.get(str)
     require(Files.isDirectory(path), s"${path} must be directory")
     require(Files.isWritable(path), s"${path} must be writable")

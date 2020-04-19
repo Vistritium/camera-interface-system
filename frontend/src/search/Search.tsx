@@ -1,4 +1,4 @@
-import {Data, Image} from "../Model";
+import {Data, Image, Preset} from "../Model";
 import React, {useEffect, useState} from "react"
 import {PresetSelector} from "./PresetSelector";
 import {SearchState} from "./SearchState";
@@ -17,12 +17,12 @@ type SearchProps = {
 
 export const Search = ({data, runGallery}: SearchProps) => {
 
-    const [selectedPresets, setSelectedPresets] = useState<Array<Image>>();
+    const [selectedPresets, setSelectedPresets] = useState<Array<Preset>>();
     const [selectedHours, setSelectedHours] = useState<Array<Number>>();
     const [from, setFrom] = useState<Date>();
     const [to, setTo] = useState<Date>();
 
-    const handleUpdateSelectedPresets = (images: Array<Image>) => {
+    const handleUpdateSelectedPresets = (images: Array<Preset>) => {
         setSelectedPresets(images)
     };
 
@@ -42,8 +42,8 @@ export const Search = ({data, runGallery}: SearchProps) => {
 
     useEffect(() => {
         setSelectedPresets([]);
-        setSelectedHours([]);
-        setFrom(moment(data.bounds.max).add(-5, 'days').toDate());
+        setSelectedHours([9, 10, 11, 12, 13, 14, 15, 16, 17]);
+        setFrom(moment(data.bounds.max).add(-1, 'days').toDate());
         setTo(data.bounds.max);
     }, [data]);
 
@@ -51,7 +51,7 @@ export const Search = ({data, runGallery}: SearchProps) => {
         return <div className="container">
 
 
-            <PresetSelector selectedPresets={selectedPresets} presets={data.preview}
+            <PresetSelector selectedPresets={selectedPresets} presets={data.presets}
                             updateSelectedPresets={handleUpdateSelectedPresets}/>
             < DatesSelector minDate={data.bounds.min} maxDate={data.bounds.max} from={from}
                             to={to} updateFrom={handleUpdateToDate}

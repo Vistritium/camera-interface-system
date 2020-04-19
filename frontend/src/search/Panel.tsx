@@ -1,4 +1,4 @@
-import {Image, ImageEntry} from "../Model";
+import {Image, ImageEntry, Preset} from "../Model";
 import React, {useEffect, useState} from "react"
 import "./Panel.scss"
 import * as Server from "../Server"
@@ -8,7 +8,7 @@ import moment from "moment-timezone"
 import {RunGallery} from "../App";
 
 type Panel = {
-    presets: Array<Image>
+    presets: Array<Preset>
     hours: Array<Number>
     bounds: {
         from: Date

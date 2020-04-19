@@ -7,8 +7,10 @@ import com.typesafe.scalalogging.LazyLogging
 import slick.ast.BaseTypedType
 import slick.jdbc.{JdbcType, SQLiteProfile}
 
-class SlickRepository extends LazyLogging {
+trait SlickRepository extends LazyLogging {
 
-  protected implicit val slick: SQLiteProfile.backend.DatabaseDef = DB()
+  protected val db: DB
+
+  protected implicit val slick: SQLiteProfile.backend.DatabaseDef = db.apply()
   protected implicit val instantColumnType: JdbcType[Instant] with BaseTypedType[Instant] = Tables.instantColumnType
 }

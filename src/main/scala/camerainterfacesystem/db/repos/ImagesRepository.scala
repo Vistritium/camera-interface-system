@@ -11,7 +11,14 @@ import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-object ImagesRepository extends SlickRepository {
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
+
+@Singleton
+class ImagesRepository @Inject()(
+  protected val db: DB,
+  presetsRepository: PresetsRepository,
+) extends SlickRepository with LazyLogging {
 
   private val images = Tables.Images
   private val insertQuery = images returning images.map(_.id) into ((image, id) => image.copy(id = id))
@@ -25,7 +32,7 @@ object ImagesRepository extends SlickRepository {
       _ <- images.filter(_.fullpath === image.fullpath).delete
       i <- insertQuery += image
     } yield i
-    DB().run(query)
+    db().run(query)
   }
 
   def addImages(imagesList: Seq[Image])(implicit executionContext: ExecutionContext): Future[Seq[Image]] = {
@@ -34,7 +41,7 @@ object ImagesRepository extends SlickRepository {
       _ <- images.filter(_.fullpath.inSet(fullPaths)).delete
       i <- insertQuery ++= imagesList
     } yield i
-    DB().run(query)
+    db().run(query)
   }
 
   def getNewestImagesForPreset(presetId: Int, limit: Int): Future[(Seq[Image])] = {
@@ -44,7 +51,7 @@ object ImagesRepository extends SlickRepository {
       .sortBy(_.phototaken.desc)
       .take(limit)
 
-    DB().run(query.result)
+    db().run(query.result)
   }
 
   def deleteImage(idOrFullpath: Either[Int, String])(implicit executionContext: ExecutionContext): Future[Unit] = {
@@ -52,18 +59,18 @@ object ImagesRepository extends SlickRepository {
       case Left(id) => images.filter(_.id === id)
       case Right(value) => images.filter(_.fullpath === value)
     }).delete
-    DB().run(query).map(_ => Unit)
+    db().run(query).map(_ => ())
   }
 
   def deleteAllBetween(min: Instant, max: Instant, dryRun: Boolean)(implicit executionContext: ExecutionContext): Future[Seq[Image]] = {
-    DB().run {
+    db().run {
       images
         .filter(_.phototaken > min)
         .filter(_.phototaken < max)
         .result
     } map { res =>
       if (!dryRun) {
-        DB().run(images.filter(_.id inSet res.map(_.id).toSet).delete)
+        db().run(images.filter(_.id inSet res.map(_.id).toSet).delete)
       }
       res
     }
@@ -74,7 +81,7 @@ object ImagesRepository extends SlickRepository {
       case Left(id) => images.filter(_.id === id)
       case Right(value) => images.filter(_.fullpath === value)
     }).result.headOption
-    DB().run(query)
+    db().run(query)
   }
 
   def getNewestImagesForAllPresets(hour: Int): Future[Vector[(Image, Preset)]] = {
@@ -85,7 +92,7 @@ object ImagesRepository extends SlickRepository {
         LEFT JOIN presets ON i1.presetId == presets.id
         WHERE i2.presetId IS NULL AND i1.hourTaken = $hour""".as[(Image, Preset)]
 
-    DB().run(sql)
+    db().run(sql)
   }
 
   def getNewestImagesForAllPresets(): Future[Vector[(Image, Preset)]] = {
@@ -97,7 +104,7 @@ object ImagesRepository extends SlickRepository {
     LEFT JOIN presets ON i1.presetId == presets.id
     WHERE i2.presetId IS NULL""".as[(Image, Preset)]
 
-    DB().run(sql)
+    db().run(sql)
   }
 
   def getImagesForPresetAndHour(
@@ -105,7 +112,7 @@ object ImagesRepository extends SlickRepository {
     min: Option[Instant] = None,
     max: Option[Instant] = None)
     (implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
-    PresetsRepository.getPresetById(presetId).flatMap {
+    presetsRepository.getPresetById(presetId).flatMap {
       case None => throw new IllegalStateException("Unknown preset id")
       case Some(value) => {
         var query = imageJoinPreset
@@ -119,7 +126,7 @@ object ImagesRepository extends SlickRepository {
           case Some(max) => query.filter(_.phototaken <= max)
           case None => query
         }
-        DB().run(query
+        db().run(query
           .result).map {
           value -> _
         }
@@ -129,7 +136,7 @@ object ImagesRepository extends SlickRepository {
 
   def findImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
     val query = prepareFindImages(presets, hours, min, max, granulation)
-    DB().run(query.result.map(res => {
+    db().run(query.result.map(res => {
       res
     }))
   }
@@ -137,7 +144,7 @@ object ImagesRepository extends SlickRepository {
   def findImagesCount(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Int] = {
     val mainQuery = prepareFindImages(presets, hours, min, max, granulation)
     val query = mainQuery.length
-    DB().run(query.result)
+    db().run(query.result)
       .map(CollectionUtils.granulation(_, granulation))
   }
 
@@ -164,17 +171,17 @@ object ImagesRepository extends SlickRepository {
       """.as[Image].headOption.map(image => date -> image)
     }
 
-    DB().run(DBIO.sequence(queries).transactionally)
+    db().run(DBIO.sequence(queries).transactionally)
   }
 
   def getAvailableHours(): Future[Seq[Int]] = {
-    DB().run(
+    db().run(
       images.groupBy(_.hourTaken).map(_._1).result
     )
   }
 
   def getEarliestDate(): Future[Option[Instant]] = {
-    DB().run(images
+    db().run(images
       .map(_.phototaken)
       .sortBy(_.asc)
       .take(1)
@@ -182,7 +189,7 @@ object ImagesRepository extends SlickRepository {
   }
 
   def getLatestDate(): Future[Option[Instant]] = {
-    DB().run(images
+    db().run(images
       .map(_.phototaken)
       .sortBy(_.desc)
       .take(1)
@@ -190,7 +197,7 @@ object ImagesRepository extends SlickRepository {
   }
 
   def countImagesBetweenDates(min: Instant, max: Instant): Future[Int] = {
-    DB().run(images
+    db().run(images
       .filter(_.phototaken > min)
       .filter(_.phototaken < max)
       .length.result)

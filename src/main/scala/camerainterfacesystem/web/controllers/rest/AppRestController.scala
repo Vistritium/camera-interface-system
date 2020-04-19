@@ -3,14 +3,14 @@ package camerainterfacesystem.web.controllers.rest
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, MediaTypes, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Route, StandardRoute}
-import camerainterfacesystem.Config
 import camerainterfacesystem.web.AppController
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import scala.concurrent.Future
 
 abstract class AppRestController extends AppController {
 
-  private val objectMapper = Config.objectMapper
+  protected val objectMapper: ObjectMapper
 
   override def route: Route = pathPrefix("api") {
     restRoute

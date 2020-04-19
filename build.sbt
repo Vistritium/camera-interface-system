@@ -2,41 +2,44 @@ name := "camera-interface-system"
 
 version := "0.1"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.13.1"
 
 resolvers += "Adobe" at "https://repo.adobe.com/nexus/content/repositories/public/"
 resolvers += Resolver.bintrayRepo("hseeberger", "maven")
+
+val JacksonVersion = "2.10.1"
+val AkkaVersion = "2.6.4"
 
 libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.4.0",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "org.apache.httpcomponents" % "httpclient" % "4.5.3",
   "org.apache.httpcomponents" % "httpmime" % "4.5.5",
-  "com.fasterxml.jackson.core" % "jackson-core" % "2.9.1",
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.9.1",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.1",
-  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.9.1",
-  "com.typesafe.akka" %% "akka-actor" % "2.5.4",
-  "com.typesafe.akka" %% "akka-stream" % "2.5.4",
-  "com.typesafe.akka" %% "akka-http" % "10.0.10",
-  "de.heikoseeberger" %% "akka-http-circe" % "1.18.0",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.8.0",
-  "commons-io" % "commons-io" % "2.5",
-  "org.apache.commons" % "commons-lang3" % "3.7",
-  "com.github.hipjim" %% "scala-retry" % "0.2.2",
-  "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
+  "com.fasterxml.jackson.core" % "jackson-core" % JacksonVersion,
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % JacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % JacksonVersion,
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % JacksonVersion,
+  "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
+  "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
+  "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+  "com.typesafe.akka" %% "akka-http" % "10.1.11",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+  "commons-io" % "commons-io" % "2.6",
+  "org.apache.commons" % "commons-lang3" % "3.9",
+  "com.github.hipjim" %% "scala-retry" % "0.4.0",
+  "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
   "org.reflections" % "reflections" % "0.9.11",
   "org.synchronoss.cloud" % "nio-multipart-parser" % "1.1.0",
   "org.xerial" % "sqlite-jdbc" % "3.20.0" % "runtime",
   "org.flywaydb" % "flyway-core" % "4.2.0",
   "com.microsoft.azure" % "azure-storage" % "5.5.0",
-  "com.typesafe.slick" %% "slick" % "3.2.1",
-  "com.typesafe.slick" %% "slick-codegen" % "3.2.1",
+  "com.typesafe.slick" %% "slick" % "3.3.2",
   "org.apache.commons" % "commons-imaging" % "1.0-R1534292",
   "com.github.ben-manes.caffeine" % "caffeine" % "2.5.5",
-  "com.github.blemale" %% "scaffeine" % "2.2.0",
-  "com.chuusai" %% "shapeless" % "2.3.2",
-  "com.squareup.okhttp3" % "okhttp" % "3.10.0"
+  "com.github.blemale" %% "scaffeine" % "4.0.0",
+  "com.squareup.okhttp3" % "okhttp" % "3.10.0",
+  "net.codingwell" %% "scala-guice" % "4.2.6",
+  "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
 )
 
 javaOptions in Universal ++= Seq(

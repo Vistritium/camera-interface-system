@@ -1,28 +1,33 @@
 package camerainterfacesystem.web.controllers
 
-import java.net.{URLDecoder, URLEncoder}
+import java.net.URLDecoder
 
-import akka.actor.ActorRef
+import akka.actor.ActorSystem
+import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.MediaType.Compressible
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
-import camerainterfacesystem.Main
-import camerainterfacesystem.web.{AppController, Controller}
-import akka.pattern.ask
-import camerainterfacesystem.services.{GetData, GetDataResult, ImagesService}
+import camerainterfacesystem.services.akkap.ImageDataService
+import camerainterfacesystem.services.{AkkaRefNames, ImagesService}
+import camerainterfacesystem.web.AppController
+import com.google.inject.name.Named
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
+import akka.actor.typed.scaladsl.AskPattern._
+import scala.concurrent.ExecutionContext
 
-import scala.util.{Failure, Success}
-
-@Controller
-class ImagesController extends AppController {
-
-  private val imageDataService: ActorRef = Main.imageDataService
+@Singleton
+class ImagesController @Inject()(
+  @Named(AkkaRefNames.ImageDataService) imageDataService: ActorRef[ImageDataService.Command],
+  protected implicit val executionContext: ExecutionContext,
+  imagesService: ImagesService,
+  override protected val system: ActorSystem
+) extends AppController with LazyLogging {
 
   override def route = pathPrefix("images") {
     path("newest") {
       get {
-        handleFutureError(onComplete(ImagesService.getNewestSnaps())) {
+        handleFutureError(onComplete(imagesService.getNewestSnaps())) {
           images => {
             complete(???)
           }
@@ -31,7 +36,7 @@ class ImagesController extends AppController {
     } ~ get {
       path("download" / RemainingPath) { path =>
         val remaining = URLDecoder.decode(path.toString(), "utf-8")
-        handleFutureError(onComplete((imageDataService ? GetData(remaining)).mapTo[GetDataResult])) {
+        handleFutureError(onComplete(imageDataService.ask[ImageDataService.GetDataResult](ref => ImageDataService.GetData(remaining, ref)))) {
           data =>
             complete(HttpResponse(entity = HttpEntity(ContentType(MediaType.image("jpeg", Compressible, ".jpg")), data.bytes)))
         }

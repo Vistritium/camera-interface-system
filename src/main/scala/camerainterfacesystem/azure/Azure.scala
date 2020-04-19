@@ -2,13 +2,18 @@ package camerainterfacesystem.azure
 
 import java.io.{ByteArrayOutputStream, InputStream, OutputStream}
 
-import camerainterfacesystem.Config
+import camerainterfacesystem.configuration.ConfigLoader
 import com.microsoft.azure.storage.CloudStorageAccount
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.config.Config
+import com.typesafe.scalalogging.LazyLogging
 
+@Singleton
+class Azure @Inject()(
+  mainConfig: Config
+) extends LazyLogging {
 
-object Azure {
-
-  private val config = Config().getConfig("azure")
+  private val config = mainConfig.getConfig("azure")
   private val connectionString = config.getString("blobConnectionString")
   private val containerName = config.getString("container")
 

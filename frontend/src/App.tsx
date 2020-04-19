@@ -21,22 +21,28 @@ function App() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const preview = await (await fetch(
-                Server.address("/api/preview"),
-            )).json();
-            const hours = await (await fetch(
-                Server.address("/api/hours"),
-            )).json();
-            const bounds = await (await fetch(
-                Server.address("/api/bounds"),
-            )).json();
+            const previewLoad = fetch(Server.address("/api/preview")).then(s => s.json())
+            const hoursLoad = fetch(Server.address("/api/hours")).then(s => s.json())
+            const boundsLoad = fetch(Server.address("/api/bounds")).then(s => s.json())
+            const presetsLoad = fetch(Server.address("/api/presets")).then(s => s.json())
+
+            const preview = await (await previewLoad)
+            const hours = await (await hoursLoad)
+            const bounds = await (await boundsLoad)
+            const presets = await (await presetsLoad)
+            console.log(preview)
             const data: Data = {
-                preview: preview,
                 hours: hours,
                 bounds: {
                     min: new Date(bounds.min),
                     max: new Date(bounds.max)
-                }
+                },
+                presets: presets.map(p => {
+                    return {
+                        ...p,
+                        image: preview.find(prev => prev.presetid === p.id) as Image
+                    }
+                })
             };
             console.log(data);
             setData(data);
@@ -59,7 +65,7 @@ function App() {
     } else {
         return (
             <div className="App">
-                < Preview max={data.bounds.max} images={data?.preview} runGallery={runGallery}/>
+                < Preview max={data.bounds.max} runGallery={runGallery} presets={data.presets}/>
                 <hr/>
                 < Search data={data} runGallery={runGallery}/>
                 {gallery ? < Gallery images={gallery.images}/> : null}

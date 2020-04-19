@@ -7,9 +7,15 @@ import akka.http.scaladsl.server.Route
 
 import scala.concurrent.duration._
 
-class FrontendSpecialController {
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
+
+@Singleton
+class FrontendSpecialController @Inject()(
+) extends LazyLogging {
+
   def route: Route =
-    respondWithHeader(`Cache-Control`(`public`, `max-age`((1 hour).toSeconds))) {
+    respondWithHeader(`Cache-Control`(`public`, `max-age`((1.hour).toSeconds))) {
       pathSingleSlash {
         getFromResource("frontend/index.html")
       } ~ getFromResourceDirectory("frontend")

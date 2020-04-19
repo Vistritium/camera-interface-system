@@ -1,10 +1,13 @@
 package camerainterfacesystem.utils
 
-import java.time.format.DateTimeFormatter
 import java.time._
+import java.time.format.DateTimeFormatter
 import java.util.{Objects, TimeZone}
 
-import camerainterfacesystem.Config
+import camerainterfacesystem.configuration.AppConfig
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.config.Config
+import com.typesafe.scalalogging.LazyLogging
 import org.apache.commons.imaging.Imaging
 import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata
 import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants
@@ -12,9 +15,13 @@ import org.apache.commons.lang3.StringUtils
 
 import scala.util.{Failure, Success, Try}
 
-object ImageUtils {
+@Singleton
+class ImageUtils @Inject()(
+  appConfig: AppConfig,
+  config: Config
+) extends LazyLogging {
 
-  private val timezone = TimeZone.getTimeZone(Config().getString("uploadedFormatTimezone"))
+  private val timezone = TimeZone.getTimeZone(config.getString("uploadedFormatTimezone"))
 
   def extractPropertiesFromPath(name: String): Try[ImagePathProperties] = {
     Try {
@@ -30,8 +37,6 @@ object ImageUtils {
       ImagePathProperties(name, fullPath, presetName, hour)
     }
   }
-
-  case class ImagePathProperties(filename: String, fullpath: String, presetName: String, hourTaken: Int)
 
   private val exifDateFormatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
 
@@ -49,3 +54,5 @@ object ImageUtils {
     }
   }
 }
+
+case class ImagePathProperties(filename: String, fullpath: String, presetName: String, hourTaken: Int)

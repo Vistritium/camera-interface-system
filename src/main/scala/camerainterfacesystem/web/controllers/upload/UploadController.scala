@@ -1,28 +1,33 @@
 package camerainterfacesystem.web.controllers.upload
 
-import akka.actor.Props
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
-import akka.stream.ActorMaterializer
+import akka.stream.Materializer
 import camerainterfacesystem.utils.StoppingSupervisor
-import camerainterfacesystem.web.{AppController, WebServer}
+import camerainterfacesystem.web.AppController
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
 import org.synchronoss.cloud.nio.multipart.{Multipart, MultipartContext}
 
-import scala.concurrent.{ExecutionContextExecutor, Promise}
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
 import scala.util.{Failure, Success}
 
-class UploadController extends AppController {
+@Singleton
+class UploadController @Inject()(
+  implicit val system: ActorSystem,
+  protected val executionContext: ExecutionContext,
+  uploadReceiverActorFactory: UploadReceiverActorFactory
+) extends AppController with  LazyLogging {
 
-  private implicit val materializer: ActorMaterializer = WebServer.webMaterializer
-  private implicit val dispatcher: ExecutionContextExecutor = materializer.system.dispatcher
 
   override def route: Route = path("upload") {
     post {
       extractRequest { req =>
         val onCompleteTry: Promise[Unit] = Promise[Unit]()
 
-        val ref = materializer.system.actorOf(StoppingSupervisor(Props(classOf[UploadReceiverActor], onCompleteTry)))
+        val ref = system.actorOf(StoppingSupervisor(Props(uploadReceiverActorFactory.uploadReceiverActor(onCompleteTry))))
         val adapter = new NioMultipartParserListenerAdapter(ref)
 
         val contentLength = req.entity.contentLengthOption.getOrElse(-1.toLong).toInt

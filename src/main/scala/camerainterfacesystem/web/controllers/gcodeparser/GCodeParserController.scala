@@ -1,13 +1,22 @@
 package camerainterfacesystem.web.controllers.gcodeparser
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import camerainterfacesystem.Config
 import camerainterfacesystem.web.AppController
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.inject.{Inject, Singleton}
+import com.typesafe.scalalogging.LazyLogging
 
-import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
+import scala.jdk.CollectionConverters._
 
-class GCodeParserController extends AppController {
+@Singleton
+class GCodeParserController @Inject()(
+  objectMapper: ObjectMapper,
+  protected val executionContext: ExecutionContext,
+  override protected val system: ActorSystem
+) extends AppController with LazyLogging {
 
   def decode(gcode: String): String = {
     val lines = gcode.replace("\r", "").split("\n")
@@ -17,7 +26,7 @@ class GCodeParserController extends AppController {
       .map(_.substring(stringToTrim.length + 1))
       .reduceLeft(_ + _)
 
-    val node = Config.objectMapper.readTree(res)
+    val node = objectMapper.readTree(res)
 
     def parseIni(name: String, string: String): String = {
       val replaced = string.replace("""\n""", "\n")
@@ -43,7 +52,7 @@ class GCodeParserController extends AppController {
   override def route: Route = pathPrefix("gcode") {
     path("parse") {
       post {
-        formField("file" ?) { file =>
+        formField("file".?) { file =>
           if (file.isDefined && file.get.nonEmpty) {
             complete(decode(file.get))
           } else {

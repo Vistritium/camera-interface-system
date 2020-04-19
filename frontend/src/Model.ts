@@ -13,13 +13,24 @@ export interface Bounds {
 }
 
 export interface Data {
-
-    preview: Array<Image>
     hours: Array<Number>
     bounds: Bounds
+    presets: Array<Preset>
 }
 
 export interface ImageEntry {
     fullpath: String
     phototaken: Date
+    preset: Preset
+}
+
+export interface Preset {
+    id: Number
+    name: String
+    displayName?: String
+    image: Image
+}
+
+export function getName(preset: Preset) {
+    return preset.displayName ? preset.displayName : preset.name
 }

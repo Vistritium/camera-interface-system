@@ -1,13 +1,15 @@
 package camerainterfacesystem.services
 
+import akka.actor.ActorSystem
+import akka.actor.typed.Scheduler
+import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
-import camerainterfacesystem.Main
 import com.typesafe.scalalogging.LazyLogging
 
-import concurrent.duration._
-import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.duration._
 
 trait AppService extends LazyLogging {
-  protected implicit val timeout: Timeout = Timeout(1 hour)
-  protected implicit val executionContext: ExecutionContextExecutor = Main.system.dispatcher
+  protected implicit val timeout: Timeout = Timeout(1.hour)
+  protected val system: ActorSystem
+  protected implicit val scheduler: Scheduler = system.scheduler.toTyped
 }

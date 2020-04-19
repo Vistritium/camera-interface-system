@@ -1,23 +1,32 @@
 package camerainterfacesystem.web.controllers.upload
 
 import java.io.ByteArrayInputStream
-import java.time.{OffsetDateTime, ZonedDateTime}
+import java.time.ZonedDateTime
 import java.util
 import java.util.{Objects, UUID}
 
+import camerainterfacesystem.AppActor
 import camerainterfacesystem.azure.Azure
+import camerainterfacesystem.configuration.AppConfig
 import camerainterfacesystem.db.Tables.Image
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
-import camerainterfacesystem.utils.ImageUtils
-import camerainterfacesystem.utils.ImageUtils.ImagePathProperties
-import camerainterfacesystem.{AppActor, Config}
+import camerainterfacesystem.utils.{ImagePathProperties, ImageUtils}
+import com.google.inject.Inject
+import com.google.inject.assistedinject.Assisted
 import org.apache.commons.lang3.StringUtils
 
-import scala.collection.JavaConverters._
 import scala.concurrent.{Future, Promise}
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
 
-class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
+class UploadReceiverActor @Inject()(
+  @Assisted val onComplete: Promise[Unit],
+  imageUtils: ImageUtils,
+  appConfig: AppConfig,
+  presetsRepository: PresetsRepository,
+  imagesRepository: ImagesRepository,
+  azure: Azure
+) extends AppActor {
 
   private var allPartsFinished = false
 
@@ -44,7 +53,7 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
           val filename = extractFilename(contentDispotionString)
           val processingId = UUID.randomUUID().toString.substring(0, 5) + " " + filename
           processingFiles = processingFiles + processingId
-          val props: ImagePathProperties = ImageUtils.extractPropertiesFromPath(filename) match {
+          val props: ImagePathProperties = imageUtils.extractPropertiesFromPath(filename) match {
             case Failure(exception) => {
               if (!onComplete.isCompleted) {
                 onComplete.failure(exception)
@@ -53,7 +62,7 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
             }
             case Success(value) => value
           }
-          val zonedDateTime: ZonedDateTime = ImageUtils.extractDateFromJpeg(bytes) match {
+          val zonedDateTime: ZonedDateTime = imageUtils.extractDateFromJpeg(bytes) match {
             case Failure(exception) => {
               onComplete.failure(exception)
               throw new IllegalStateException(exception)
@@ -61,12 +70,12 @@ class UploadReceiverActor(val onComplete: Promise[Unit]) extends AppActor {
             case Success(value) => value
           }
 
-          val future = if (!Config.dryMode) {
+          val future = if (!appConfig.dryMode) {
             for {
-              preset <- PresetsRepository.findPresetByNameOrCreateNew(props.presetName)
-              image <- ImagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toInstant,
+              preset <- presetsRepository.findPresetByNameOrCreateNew(props.presetName)
+              image <- imagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toInstant,
                 preset.id, props.hourTaken))
-            } yield Azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+            } yield azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
           } else {
             Future {"dry mode"}
           }
