@@ -5,7 +5,7 @@ import akka.actor.typed.ActorRef
 import akka.util.ByteString
 import camerainterfacesystem.configs.DBConfig
 import camerainterfacesystem.db.Tables.Image
-import camerainterfacesystem.services.{AkkaRefNames, AppService, akkap}
+import camerainterfacesystem.services.{AkkaRefNames, AppService, ThumbnailMaker, akkap}
 import camerainterfacesystem.services.akkap.ImageDataService
 import com.github.blemale.scaffeine
 import com.github.blemale.scaffeine.{AsyncLoadingCache, Scaffeine}
@@ -17,13 +17,10 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
 import akka.stream.scaladsl.Source
 import org.mapdb.{DBMaker, HTreeMap, Serializer}
+
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-object ThumbnailCache {
-
-
-}
 
 @Singleton
 class ThumbnailCache @Inject()(
@@ -31,6 +28,7 @@ class ThumbnailCache @Inject()(
   config: Config,
   override protected implicit val system: ActorSystem,
   @Named(AkkaRefNames.ImageDataService) imageDataService: ActorRef[ImageDataService.Command],
+  thumbnailMaker: ThumbnailMaker,
 ) extends AppService with LazyLogging {
 
 
@@ -59,8 +57,9 @@ class ThumbnailCache @Inject()(
             logger.info(s"azure hit - $fullpath")
             imageDataService.ask[ImageDataService.GetDataResult](r => ImageDataService.GetData(fullpath, r)).map(_.bytes)
               .map { r =>
-                mapdb.put(fullpath, r)
-                r
+                val thumbnail = thumbnailMaker.make(r)
+                mapdb.put(fullpath, thumbnail)
+                thumbnail
               }
 
           }.map(x => ByteString.apply(x))
