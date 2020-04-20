@@ -14,6 +14,9 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.LazyLogging
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.util.ByteString
+import camerainterfacesystem.services.cache.ThumbnailCache
+
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -21,6 +24,7 @@ class ImagesController @Inject()(
   @Named(AkkaRefNames.ImageDataService) imageDataService: ActorRef[ImageDataService.Command],
   protected implicit val executionContext: ExecutionContext,
   imagesService: ImagesService,
+  thumbnailCache: ThumbnailCache,
   override protected val system: ActorSystem
 ) extends AppController with LazyLogging {
 
@@ -35,10 +39,19 @@ class ImagesController @Inject()(
       }
     } ~ get {
       path("download" / RemainingPath) { path =>
-        val remaining = URLDecoder.decode(path.toString(), "utf-8")
-        handleFutureError(onComplete(imageDataService.ask[ImageDataService.GetDataResult](ref => ImageDataService.GetData(remaining, ref)))) {
-          data =>
-            complete(HttpResponse(entity = HttpEntity(ContentType(MediaType.image("jpeg", Compressible, ".jpg")), data.bytes)))
+
+        parameter(Symbol("thumbnail").as[Boolean] ? false) { thumbnail =>
+          val fullPath = URLDecoder.decode(path.toString(), "utf-8")
+
+          val eventualResult =
+            if (!thumbnail)
+              imageDataService.ask[ImageDataService.GetDataResult](ref => ImageDataService.GetData(fullPath, ref)).map(r => ByteString(r.bytes))
+            else
+              thumbnailCache.getThumbnail(fullPath)
+              handleFutureError(onComplete(eventualResult)) {
+                data =>
+                  complete(HttpResponse(entity = HttpEntity(ContentType(MediaType.image("jpeg", Compressible, ".jpg")), data)))
+              }
         }
       }
     } ~ delete {

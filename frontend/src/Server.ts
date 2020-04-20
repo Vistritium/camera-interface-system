@@ -14,8 +14,10 @@ export interface HasFullpath {
     fullpath: String
 }
 
-export function imageAddress(image: HasFullpath) {
-    return address("/images/download/" + image.fullpath)
+export function imageAddress(image: HasFullpath, thumbnail: Boolean = false) {
+    const base = address("/images/download/" + image.fullpath)
+    if (!thumbnail) return base
+    else return base + "?thumbnail=true"
 }
 
 export type ImageUrlFetchType = "count" | "images"

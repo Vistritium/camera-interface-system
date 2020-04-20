@@ -28,13 +28,13 @@ export const PresetSelector = ({presets, updateSelectedPresets, selectedPresets}
                             };
 
                             return (
-                                <div className="preset-selector-preset-image-container">
+                                <div key={i} className="preset-selector-preset-image-container">
                                     <div className="preset-selector-preset-container">
                                         <div className="preset-selector-preset">
                                             {getName(preset)}
                                         </div>
                                     </div>
-                                    <img key={i} src={imageAddress(preset.image)} alt="Loading image"
+                                    <img src={imageAddress(preset.image)} alt="Loading image"
                                          className={"preset-selector-image " + selectedClass} onClick={onClick}/>
                                 </div>
                             )

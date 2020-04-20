@@ -40,6 +40,7 @@ libraryDependencies ++= Seq(
   "com.squareup.okhttp3" % "okhttp" % "3.10.0",
   "net.codingwell" %% "scala-guice" % "4.2.6",
   "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
+  "org.mapdb" % "mapdb" % "3.0.8"
 )
 
 javaOptions in Universal ++= Seq(

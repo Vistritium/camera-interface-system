@@ -1,8 +1,10 @@
 package camerainterfacesystem.configuration
 
+import java.nio.file.{Files, Paths}
 import java.time.ZoneId
 
 import akka.actor.ActorSystem
+import camerainterfacesystem.configs.DBConfig
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -64,6 +66,17 @@ class MainModule(config: Config) extends ScalaModule with LazyLogging {
   @Provides
   @Singleton
   def defaultContext(actorSystem: ActorSystem): ExecutionContext = actorSystem.dispatcher
+
+  @Provides
+  @Singleton
+  def dbPath(): DBConfig = {
+    val path = Paths.get(config.getString("database"))
+    require(Files.isDirectory(path), s"${path} must be directory")
+    require(Files.isWritable(path), s"${path} must be writable")
+    DBConfig(
+      path
+    )
+  }
 
 
 }

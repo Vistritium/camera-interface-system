@@ -19,7 +19,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ImagesService @Inject()(
-  protected implicit val executionContext: ExecutionContext,
   imagesRepository: ImagesRepository,
   presetsRepository: PresetsRepository,
   @Named(AkkaRefNames.ImageDataService) imageDataService: ActorRef[ImageDataService.Command],

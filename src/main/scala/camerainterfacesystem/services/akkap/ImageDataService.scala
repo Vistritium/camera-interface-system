@@ -44,22 +44,6 @@ class ImageDataService @Inject()(
     }
   }
 
-  /*  override def rreceive: Receive = {
-
-      case GetData(path) => {
-        replyAsk(sender(), Future {
-          cache.get(path, _ => {
-            download(path)
-          })
-        }.map(GetDataResult))
-      }
-      case CacheData(path) => {
-        Future {
-          cache.get(path, _ => download(path))
-        }
-      }
-    }*/
-
   private def download(path: String) = {
     logger.info(s"Downloading image ${path} from cloud storage")
     azure.download(path)

@@ -12,4 +12,5 @@ trait AppService extends LazyLogging {
   protected implicit val timeout: Timeout = Timeout(1.hour)
   protected val system: ActorSystem
   protected implicit val scheduler: Scheduler = system.scheduler.toTyped
+  protected implicit val context = system.dispatcher
 }

@@ -11,12 +11,12 @@ import camerainterfacesystem.db.util.{Hour, PresetId}
 import camerainterfacesystem.services.ImagesService
 import camerainterfacesystem.utils.PresetModelUtils
 import camerainterfacesystem.web.controllers.Unmarshallers
-import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, MetaImage, PresetWithCountAndHour}
+import camerainterfacesystem.web.controllers.rest.forms.{ImagesWithPresetForHour, MetaImage}
 import com.fasterxml.jackson.databind.ObjectMapper
-
-import scala.concurrent.{ExecutionContext, Future}
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ImagesRestController @Inject()(
