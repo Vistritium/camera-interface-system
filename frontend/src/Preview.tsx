@@ -16,7 +16,7 @@ export const Preview = ({runGallery, max, presets}: PreviewProps) => {
         const from = moment(max).add(-14, 'days')
         const execute = async () => {
             const preset: Preset = presets.find(p => p.id === image.presetid) as Preset
-            const data = await Server.fetchImages(from.toDate(), max, [16], [preset])
+            const data = await Server.fetchImages(from.toDate(), max, [16], [preset], 0)
             runGallery(data)
         }
         execute()

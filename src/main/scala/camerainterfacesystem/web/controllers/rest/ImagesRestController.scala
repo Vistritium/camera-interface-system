@@ -39,71 +39,62 @@ class ImagesRestController @Inject()(
           ImagesWithPresetForHour(res._1.normalizeName, res._2)
         }
     }
-  } ~ get {
-    path("images" / "min" / LongNumber / "max" / LongNumber) { (minEpoch, maxEpoch) => {
-      parameter("dryrun" ? false) { dryrun =>
-        val min = Instant.ofEpochMilli(minEpoch)
-        val max = Instant.ofEpochMilli(maxEpoch)
+  } ~ path("images") {
+    parameters(
+      Symbol("min").as(Unmarshallers.instantUnmarshaller),
+      Symbol("max").as(Unmarshallers.instantUnmarshaller) ? Instant.now(),
+      Symbol("granulation").as[Int] ? 1,
+      Symbol("presets").as(Unmarshallers.seqIntUnmarshaller),
+      Symbol("hours").as(Unmarshallers.seqIntUnmarshaller),
+      Symbol("count").as[Boolean] ? false) { (min, max, granulation, presets, hours, count) =>
+      val result: Future[Any] = if (!count) {
+        imagesRepository.findImages(presets.toSet, hours.toSet, min, max, granulation)
+          .map(_
+            .sortWith((l, r) => l._1.phototaken.isBefore(r._1.phototaken))
+            .map(x => new MetaImage(x._1)))
+      } else {
+        imagesRepository.findImagesCount(presets.toSet, hours.toSet, min, max, granulation)
+      }
 
-        restFutureComplete(imagesRepository.deleteAllBetween(min, max, dryrun))
+      restFutureComplete(result)
+    }
+  } ~ pathPrefix("images" / "countFrom") {
+    path(Segment / LongNumber) { (timeTypeString, count) =>
+      val max = Instant.now().plus(1, ChronoUnit.DAYS)
+      val min = {
+        val timeType = ChronoUnit.valueOf(timeTypeString.toUpperCase)
+        Instant.now().minus(count, timeType)
+      }
+      parameter('msgOnEmpty.as[Boolean] ? false) { msgOnEmpty =>
+        restFutureComplete(
+          imagesRepository.countImagesBetweenDates(min, max).map {
+            case 0 if msgOnEmpty => "EMPTY"
+            case other => other
+          }
+        )
       }
     }
-    } ~ path("images") {
-      parameters(
-        Symbol("min").as(Unmarshallers.instantUnmarshaller),
-        Symbol("max").as(Unmarshallers.instantUnmarshaller) ? Instant.now(),
-        Symbol("granulation").as[Int] ? 1, Symbol("presets").as(Unmarshallers.seqIntUnmarshaller),
-        Symbol("hours").as(Unmarshallers.seqIntUnmarshaller),
-        Symbol("count").as[Boolean] ? false) { (min, max, granulation, presets, hours, count) =>
-        val result: Future[Any] = if (!count) {
-          imagesRepository.findImages(presets.toSet, hours.toSet, min, max, granulation)
-            .map(_
-              .sortWith((l, r) => l._1.phototaken.isBefore(r._1.phototaken))
-              .map(x => new MetaImage(x._1)))
-        } else {
-          imagesRepository.findImagesCount(presets.toSet, hours.toSet, min, max, granulation)
-        }
-
-        restFutureComplete(result)
+  } ~ path("imagesClosestToDate" / "preset" / IntNumber) { preset =>
+    parameter(
+      'dates.as(Unmarshallers.commaSeparatedEpochDates)
+    ) { dates =>
+      handleFutureError(onComplete(imagesRepository.getClosestImagesToDates(dates.toList, preset))) {
+        a => restComplete(a)
       }
-    } ~ pathPrefix("images" / "countFrom") {
-      path(Segment / LongNumber) { (timeTypeString, count) =>
-        val max = Instant.now().plus(1, ChronoUnit.DAYS)
-        val min = {
-          val timeType = ChronoUnit.valueOf(timeTypeString.toUpperCase)
-          Instant.now().minus(count, timeType)
-        }
-        parameter('msgOnEmpty.as[Boolean] ? false) { msgOnEmpty =>
-          restFutureComplete(
-            imagesRepository.countImagesBetweenDates(min, max).map {
-              case 0 if msgOnEmpty => "EMPTY"
-              case other => other
-            }
-          )
-        }
-      }
-    } ~ path("imagesClosestToDate" / "preset" / IntNumber) { preset =>
-      parameter(
-        'dates.as(Unmarshallers.commaSeparatedEpochDates)
-      ) { dates =>
-        handleFutureError(onComplete(imagesRepository.getClosestImagesToDates(dates.toList, preset))) {
-          a => restComplete(a)
-        }
-      }
-    } ~ path("preview") {
-      handleFutureError(onComplete(imagesService.getPreview()))(restComplete)
-    } ~ path("hours") {
-      handleFutureError(onComplete(imagesRepository.getAvailableHours()))(restComplete)
-    } ~ path("bounds") {
-      val bounds = for {
-        minDate <- imagesRepository.getEarliestDate()
-        maxDate <- imagesRepository.getLatestDate()
-      } yield new {
-        val min = minDate
-        val max = maxDate
-      }
-      handleFutureError(onComplete(bounds))(restComplete)
     }
+  } ~ path("preview") {
+    handleFutureError(onComplete(imagesService.getPreview()))(restComplete)
+  } ~ path("hours") {
+    handleFutureError(onComplete(imagesRepository.getAvailableHours()))(restComplete)
+  } ~ path("bounds") {
+    val bounds = for {
+      minDate <- imagesRepository.getEarliestDate()
+      maxDate <- imagesRepository.getLatestDate()
+    } yield new {
+      val min = minDate
+      val max = maxDate
+    }
+    handleFutureError(onComplete(bounds))(restComplete)
   }
 }
 

@@ -21,19 +21,20 @@ export function imageAddress(image: HasFullpath, thumbnail: Boolean = false) {
 }
 
 export type ImageUrlFetchType = "count" | "images"
-export const imageUrl = (type: ImageUrlFetchType, from: Date, to: Date, hours: Array<Number>, presets: Array<Preset>) => {
+export const imageUrl = (type: ImageUrlFetchType, from: Date, to: Date, hours: Array<Number>, presets: Array<Preset>, granulation: number) => {
     const toPlusDay = moment(to).add(1, 'days')
     return address("/api/images") + "?" + new URLSearchParams({
         "min": from.toISOString(),
         "max": toPlusDay.toISOString(),
         "hours": hours.join(","),
         "presets": presets.map(p => p.id).join(","),
-        "count": type == "count" ? "true" : "false"
+        "count": type == "count" ? "true" : "false",
+        "granulation": granulation.toString()
     });
 }
 
-export const fetchImages = async (from: Date, to: Date, hours: Array<Number>, presets: Array<Preset>) => {
-    const response = await fetch(imageUrl("images", from, to, hours, presets))
+export const fetchImages = async (from: Date, to: Date, hours: Array<Number>, presets: Array<Preset>, granulation: number) => {
+    const response = await fetch(imageUrl("images", from, to, hours, presets, granulation))
     const json = await response.json()
     // @ts-ignore
     const data: Array<ImageEntry> = json.map(e => ({

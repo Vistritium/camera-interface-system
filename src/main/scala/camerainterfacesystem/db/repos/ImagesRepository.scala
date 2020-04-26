@@ -10,9 +10,10 @@ import camerainterfacesystem.utils.CollectionUtils._
 import slick.jdbc.SQLiteProfile.api._
 
 import scala.concurrent.{Await, ExecutionContext, Future}
-
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.LazyLogging
+
+import scala.collection.immutable
 
 @Singleton
 class ImagesRepository @Inject()(
@@ -135,27 +136,64 @@ class ImagesRepository @Inject()(
   }
 
   def findImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
-    val query = prepareFindImages(presets, hours, min, max, granulation)
-    db().run(query.result.map(res => {
-      res
-    }))
+    val queries = for {
+      preset <- presets
+      hour <- hours
+    } yield findImages(preset, hour, min, max, granulation)
+    Future.sequence(queries.map(q => db().run(q)).toList)
+      .map(_.flatten)
   }
 
   def findImagesCount(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Int] = {
-    val mainQuery = prepareFindImages(presets, hours, min, max, granulation)
-    val query = mainQuery.length
-    db().run(query.result)
-      .map(CollectionUtils.granulation(_, granulation))
+    if (granulation < 0) {
+      val queries = for {
+        preset <- presets
+        hour <- hours
+      } yield {
+        logger.info(s"findImages($preset, $hour, $min, $max, $granulation)")
+        findImages(preset, hour, min, max, granulation)
+      }
+      Future.sequence(queries.toList.map(q => db().run(q).map(_.length))).map(_.sum)
+    } else {
+      val queries = for {
+        preset <- presets
+        hour <- hours
+      } yield prepareFindImages(preset, hour, min, max)
+      Future.sequence(queries.map(q => db().run(q.length.result)).toList)
+        .map { r =>
+          r.map { c =>
+            if (granulation == 0) c
+            else (c / granulation) + 2
+          }.sum
+        }
+    }
   }
 
-  private def prepareFindImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int) = {
+  private def prepareFindImages(preset: Int, hour: Int, min: Instant, max: Instant) = {
     imageJoinPreset
-      .filter(_._2.id.inSet(presets))
-      .filter(_._1.hourTaken.inSet(hours))
+      .filter(_._1.presetid === preset)
+      .filter(_._1.hourTaken === hour)
       .filter(_._1.phototaken >= min)
       .filter(_._1.phototaken <= max)
-    /*.zipWithIndex
-    .map(_._1)*/
+  }
+
+  private def findImages(preset: Int, hour: Int, min: Instant, max: Instant, granulation: Int)
+    (implicit executionContext: ExecutionContext) = {
+
+    val base = prepareFindImages(preset, hour, min, max)
+
+    if (granulation < 0) {
+      (base.sortBy(_._1.phototaken.asc).take(1) unionAll base.sortBy(_._1.phototaken.desc).take(1)).result
+    } else {
+      base
+        .result
+        .map { r =>
+          val sorted = r.sortBy(_._1.phototaken)
+          val effectiveGranulation = if (granulation == 0) 1 else granulation
+          (sorted.grouped(effectiveGranulation).map(_.head).toSet + r.head + r.last).toSeq.sortBy(_._1.phototaken)
+        }
+    }
+
   }
 
   def getClosestImagesToDates(dates: List[Instant], preset: Int)(implicit executionContext: ExecutionContext)

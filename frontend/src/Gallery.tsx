@@ -26,6 +26,7 @@ export const Gallery = (gallery: Gallery) => {
             // @ts-ignore
             window.scrollTo(0, ref.current.offsetTop)
         }
+        setCurrentImage(gallery.images[startIndex])
     }, [gallery])
 
     console.log("gallery: " + JSON.stringify(gallery))
@@ -55,7 +56,24 @@ export const Gallery = (gallery: Gallery) => {
                               return showName ? <div>
                                   <div className="gallery-image-name">
                                       <div className="gallery-image-name-inner">
-                                          {currentImage ? getName(currentImage.preset) + " " + moment(currentImage.phototaken).format('LLL') : ""}
+                                          <div>
+                                              {moment(currentImage.phototaken).format('dddd')}
+                                          </div>
+                                      </div>
+                                      <div className="gallery-image-name-inner">
+                                          <div>
+                                              {moment(currentImage.phototaken).format('L')}
+                                          </div>
+                                      </div>
+                                      <div className="gallery-image-name-inner">
+                                          <div>
+                                              {moment(currentImage.phototaken).format('LT')}
+                                          </div>
+                                      </div>
+                                      <div className="gallery-image-name-inner">
+                                          <div>
+                                              {getName(currentImage.preset)}
+                                          </div>
                                       </div>
                                   </div>
                               </div> : null

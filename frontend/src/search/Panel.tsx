@@ -14,10 +14,11 @@ type Panel = {
         from: Date
         to: Date
     },
-    runGallery: RunGallery
+    runGallery: RunGallery,
+    granulation: number
 }
 
-export const Panel = ({bounds: {from, to}, hours, presets, runGallery}: Panel) => {
+export const Panel = ({bounds: {from, to}, hours, presets, runGallery, granulation}: Panel) => {
 
     const [count, setCount] = useState<Number | undefined>();
 
@@ -25,7 +26,7 @@ export const Panel = ({bounds: {from, to}, hours, presets, runGallery}: Panel) =
     useEffect(() => {
         const fetchData = async () => {
             if (presets.length > 0 && hours.length > 0) {
-                const data = await fetch(Server.imageUrl("count", from, to, hours, presets))
+                const data = await fetch(Server.imageUrl("count", from, to, hours, presets, granulation))
                 if (data.ok) {
                     const text = await data.text()
                     setCount(parseInt(text))
@@ -33,11 +34,11 @@ export const Panel = ({bounds: {from, to}, hours, presets, runGallery}: Panel) =
             }
         }
         fetchData()
-    }, [from, to, hours, presets]);
+    }, [from, to, hours, presets, granulation]);
 
     const onClick = () => {
         const execute = async () => {
-            const data = await Server.fetchImages(from, to, hours, presets)
+            const data = await Server.fetchImages(from, to, hours, presets, granulation)
             runGallery(data)
         }
         execute()

@@ -9,19 +9,24 @@
 .gallery-image-name {
   position: absolute;
   height: fit-content;
-  margin-top: 5px;
+  margin-top: 20px;
   z-index: 100;
   top: 0;
   left: 0;
   width: 100%;
   pointer-events: none;
   display: flex;
-  justify-content: center;
-
-
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .gallery-image-name-inner {
+  width: 100%;
+}
+
+.gallery-image-name-inner > div {
+  float: right;
+  width: fit-content;
   display: inline-block;
   line-height: initial;
   padding-left: 5px;
@@ -30,10 +35,21 @@
   backdrop-filter: blur(3px);
   color: #76f30a;
   vertical-align: middle;
-  height: 25px;
-  text-align: center;
-  font-size: medium;
+  height: fit-content;
+  text-align: right;
+  font-size: xx-small;
   font-weight: bold;
+}
+
+@media (min-width: $breakpoint_tablet) {
+  .gallery-image-name {
+    margin-top: 5px;
+    width: 90%;
+  }
+
+  .gallery-image-name-inner > div {
+    font-size: medium;
+  }
 }
 
 .gallery-show-image-name {

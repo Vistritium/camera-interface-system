@@ -8,6 +8,7 @@ import {DatesSelector} from "./DatesSelector";
 import moment from "moment-timezone"
 import {Panel} from "./Panel";
 import {RunGallery} from "../App";
+import {GranulationSelector} from "./GranulationSelector";
 
 type SearchProps = {
     data: Data
@@ -21,6 +22,7 @@ export const Search = ({data, runGallery}: SearchProps) => {
     const [selectedHours, setSelectedHours] = useState<Array<Number>>();
     const [from, setFrom] = useState<Date>();
     const [to, setTo] = useState<Date>();
+    const [granulation, setGranulation] = useState<number>(0);
 
     const handleUpdateSelectedPresets = (images: Array<Preset>) => {
         setSelectedPresets(images)
@@ -40,6 +42,10 @@ export const Search = ({data, runGallery}: SearchProps) => {
         setTo(to)
     };
 
+    const handleUpdateGranulation = (granulation: number) => {
+        setGranulation(granulation)
+    }
+
     useEffect(() => {
         setSelectedPresets([]);
         setSelectedHours([9, 10, 11, 12, 13, 14, 15, 16, 17]);
@@ -50,15 +56,16 @@ export const Search = ({data, runGallery}: SearchProps) => {
     if (data && selectedPresets && from && to && selectedHours) {
         return <div className="container">
 
-
             <PresetSelector selectedPresets={selectedPresets} presets={data.presets}
                             updateSelectedPresets={handleUpdateSelectedPresets}/>
+            <GranulationSelector granulation={granulation} updateGranulation={handleUpdateGranulation}/>
             < DatesSelector minDate={data.bounds.min} maxDate={data.bounds.max} from={from}
                             to={to} updateFrom={handleUpdateToDate}
                             updateTo={handleUpdateFromDate}/>
             < HoursSelector hours={data.hours} selectedHours={selectedHours}
                             updateSelectedHours={handleUpdateSelectedHours}/>
-            < Panel presets={selectedPresets} hours={selectedHours} bounds={{from: from, to: to}} runGallery={runGallery}/>
+            < Panel presets={selectedPresets} hours={selectedHours} bounds={{from: from, to: to}}
+                    runGallery={runGallery} granulation={granulation} />
         </div>
     } else return <div/>
 };
