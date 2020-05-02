@@ -5,11 +5,13 @@ import java.time.ZonedDateTime
 import java.util
 import java.util.{Objects, UUID}
 
+import akka.util.ByteString
 import camerainterfacesystem.AppActor
 import camerainterfacesystem.azure.Azure
 import camerainterfacesystem.configuration.AppConfig
 import camerainterfacesystem.db.Tables.Image
 import camerainterfacesystem.db.repos.{ImagesRepository, PresetsRepository}
+import camerainterfacesystem.services.cache.ThumbnailCache
 import camerainterfacesystem.utils.{ImagePathProperties, ImageUtils}
 import com.google.inject.Inject
 import com.google.inject.assistedinject.Assisted
@@ -25,7 +27,8 @@ class UploadReceiverActor @Inject()(
   appConfig: AppConfig,
   presetsRepository: PresetsRepository,
   imagesRepository: ImagesRepository,
-  azure: Azure
+  azure: Azure,
+  thumbnailCache: ThumbnailCache
 ) extends AppActor {
 
   private var allPartsFinished = false
@@ -75,7 +78,10 @@ class UploadReceiverActor @Inject()(
               preset <- presetsRepository.findPresetByNameOrCreateNew(props.presetName)
               image <- imagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toOffsetDateTime,
                 preset.id, props.hourTaken))
-            } yield azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+            } yield {
+              azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
+              thumbnailCache.cache(image.fullpath, ByteString(bytes))
+            }
           } else {
             Future {"dry mode"}
           }

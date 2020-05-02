@@ -56,6 +56,7 @@ class ThumbnailCache @Inject()(
               .map { r =>
                 val thumbnail = thumbnailMaker.make(r)
                 mapdb.put(fullpath, thumbnail)
+
                 thumbnail
               }
 
