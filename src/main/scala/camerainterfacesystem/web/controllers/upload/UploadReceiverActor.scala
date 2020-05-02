@@ -73,7 +73,7 @@ class UploadReceiverActor @Inject()(
           val future = if (!appConfig.dryMode) {
             for {
               preset <- presetsRepository.findPresetByNameOrCreateNew(props.presetName)
-              image <- imagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toInstant,
+              image <- imagesRepository.addImage(Image(0, props.fullpath, props.filename, zonedDateTime.toOffsetDateTime,
                 preset.id, props.hourTaken))
             } yield azure.upload(image.fullpath, new ByteArrayInputStream(bytes), bytes.length)
           } else {

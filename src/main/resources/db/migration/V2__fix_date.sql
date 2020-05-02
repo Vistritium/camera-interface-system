@@ -1,1 +1,0 @@
-UPDATE images SET photoTaken = photoTaken - 7200000;

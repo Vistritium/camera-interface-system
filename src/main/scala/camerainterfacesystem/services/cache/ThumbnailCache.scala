@@ -2,29 +2,26 @@ package camerainterfacesystem.services.cache
 
 import akka.actor.ActorSystem
 import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.AskPattern._
+import akka.stream.scaladsl.Source
 import akka.util.ByteString
-import camerainterfacesystem.configs.DBConfig
-import camerainterfacesystem.db.Tables.Image
-import camerainterfacesystem.services.{AkkaRefNames, AppService, ThumbnailMaker, akkap}
+import camerainterfacesystem.configs.{DBConfig, LocalStorageConfig}
 import camerainterfacesystem.services.akkap.ImageDataService
-import com.github.blemale.scaffeine
+import camerainterfacesystem.services.{AkkaRefNames, AppService, ThumbnailMaker}
 import com.github.blemale.scaffeine.{AsyncLoadingCache, Scaffeine}
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.adapter._
-import akka.stream.scaladsl.Source
 import org.mapdb.{DBMaker, HTreeMap, Serializer}
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 
 @Singleton
 class ThumbnailCache @Inject()(
-  dbConfig: DBConfig,
+  localStorageConfig: LocalStorageConfig,
   config: Config,
   override protected implicit val system: ActorSystem,
   @Named(AkkaRefNames.ImageDataService) imageDataService: ActorRef[ImageDataService.Command],
@@ -32,7 +29,7 @@ class ThumbnailCache @Inject()(
 ) extends AppService with LazyLogging {
 
 
-  private val mapdbHolder = DBMaker.fileDB(dbConfig.dbPath.resolve("mapdb").toFile)
+  private val mapdbHolder = DBMaker.fileDB(localStorageConfig.path.resolve("mapdb").toFile)
     .checksumHeaderBypass
     .closeOnJvmShutdown()
     .make()
@@ -70,6 +67,9 @@ class ThumbnailCache @Inject()(
 
   def getThumbnail(fullpath: String): Future[ByteString] = cache.get(fullpath).map(ByteString.apply)
 
-  def cache(fullpath: String, data: ByteString): Unit = cache.get(fullpath)
+  def cache(fullpath: String, data: ByteString): Unit = {
+    mapdb.put(fullpath, data.toArray)
+    getThumbnail(fullpath)
+  }
 
 }

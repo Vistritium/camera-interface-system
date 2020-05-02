@@ -1,6 +1,6 @@
 package camerainterfacesystem.services
 
-import java.time.Instant
+import java.time.OffsetDateTime
 
 import akka.actor.ActorSystem
 import akka.actor.typed.ActorRef
@@ -54,7 +54,7 @@ class ImagesService @Inject()(
     } yield images -> preset
   }
 
-  def getNewestForPresetHour(presetId: Int, hour: Int, min: Option[Instant], max: Option[Instant])(implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
+  def getNewestForPresetHour(presetId: Int, hour: Int, min: Option[OffsetDateTime], max: Option[OffsetDateTime])(implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
     for {
       images <- imagesRepository.getImagesForPresetAndHour(PresetId(presetId), Hour(hour), min, max)
     } yield images
@@ -70,10 +70,6 @@ class ImagesService @Inject()(
       })
       deletedFromCloud = deletedFromDB.map(image => azure.deleteBlob(image.fullpath))
     } yield deletedFromCloud.isDefined
-  }
-
-  def getSpecificDates(dates: List[Instant], preset: Int): Future[List[(Instant, Option[Image])]] = {
-    imagesRepository.getClosestImagesToDates(dates, preset)
   }
 
   private def getBytes(images: Seq[(Image)]) = {

@@ -14,8 +14,8 @@ object Unmarshallers {
 
   val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
-  val instantUnmarshaller: Unmarshaller[String, Instant] = Unmarshaller.strict(s => {
-    OffsetDateTime.parse(s, dateTimeFormatter).toInstant
+  val offsetUnmarshaller: Unmarshaller[String, OffsetDateTime] = Unmarshaller.strict(s => {
+    OffsetDateTime.parse(s, dateTimeFormatter)
   })
 
   val commaSeparatedEpochDates: Unmarshaller[String, Seq[Instant]] = Unmarshaller.strict {

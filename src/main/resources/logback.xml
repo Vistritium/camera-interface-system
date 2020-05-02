@@ -8,6 +8,7 @@
     </appender>
 
     <logger name="camerainterfacesystem" level="DEBUG"/>
+<!--    <logger name="slick.jdbc.JdbcBackend.statement"  level="DEBUG" />-->
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

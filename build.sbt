@@ -30,10 +30,12 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
   "org.reflections" % "reflections" % "0.9.11",
   "org.synchronoss.cloud" % "nio-multipart-parser" % "1.1.0",
-  "org.xerial" % "sqlite-jdbc" % "3.20.0" % "runtime",
-  "org.flywaydb" % "flyway-core" % "4.2.0",
+  "org.postgresql" % "postgresql" % "42.2.12",
+  "org.flywaydb" % "flyway-core" % "6.4.1",
   "com.microsoft.azure" % "azure-storage" % "5.5.0",
   "com.typesafe.slick" %% "slick" % "3.3.2",
+  "com.typesafe.slick" %% "slick-hikaricp" % "3.3.2",
+  "com.github.tminglei" %% "slick-pg" % "0.19.0",
   "org.apache.commons" % "commons-imaging" % "1.0-R1534292",
   "com.github.ben-manes.caffeine" % "caffeine" % "2.5.5",
   "com.github.blemale" %% "scaffeine" % "4.0.0",
@@ -42,6 +44,7 @@ libraryDependencies ++= Seq(
   "com.google.inject.extensions" % "guice-assistedinject" % "4.2.3",
   "org.mapdb" % "mapdb" % "3.0.8",
   "net.coobird" % "thumbnailator" % "0.4.11",
+  "com.iheart" %% "ficus" % "1.4.7"
 )
 
 javaOptions in Universal ++= Seq(

@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 import java.time.ZoneId
 
 import akka.actor.ActorSystem
-import camerainterfacesystem.configs.DBConfig
+import camerainterfacesystem.configs.{DBConfig, LocalStorageConfig}
 import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -15,6 +15,9 @@ import net.codingwell.scalaguice.ScalaModule
 import okhttp3.OkHttpClient
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.reflections.Reflections
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
+import org.apache.commons.lang3.StringUtils
 
 import scala.concurrent.ExecutionContext
 
@@ -70,13 +73,21 @@ class MainModule(config: Config) extends ScalaModule with LazyLogging {
   @Provides
   @Singleton
   def dbPath(): DBConfig = {
+    val result = config.as[DBConfig]("db")
+    if (StringUtils.isBlank(result.password)) throw new IllegalStateException("db password is empty")
+    result
+  }
+
+
+  @Provides
+  @Singleton
+  def localStorageConfig(): LocalStorageConfig = {
     val path = Paths.get(config.getString("database"))
     require(Files.isDirectory(path), s"${path} must be directory")
     require(Files.isWritable(path), s"${path} must be writable")
-    DBConfig(
+    LocalStorageConfig(
       path
     )
   }
-
 
 }

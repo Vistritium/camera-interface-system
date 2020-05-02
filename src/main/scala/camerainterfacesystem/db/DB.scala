@@ -3,12 +3,11 @@ package camerainterfacesystem.db
 import java.util.concurrent.Executors
 
 import camerainterfacesystem.configs.DBConfig
+import camerainterfacesystem.db.AppPostgresProfile.api._
 import com.google.inject.{Inject, Singleton}
 import com.typesafe.scalalogging.LazyLogging
 import org.flywaydb.core.Flyway
-import slick.jdbc
-import slick.jdbc.SQLiteProfile
-import slick.jdbc.SQLiteProfile.api._
+import org.flywaydb.core.api.configuration.FluentConfiguration
 
 import scala.concurrent.ExecutionContext
 
@@ -17,25 +16,21 @@ class DB @Inject()(
   dBConfig: DBConfig
 ) extends LazyLogging {
 
-  private val DatabaseFileName = "db.sqlite"
-  private val databaseFile = dBConfig.dbPath.resolve(DatabaseFileName)
-  private val dataSourceStr = s"jdbc:sqlite:${databaseFile.toString}"
+  private val dataSourceStr = s"jdbc:postgresql://${dBConfig.host}:${dBConfig.port}/${dBConfig.database}?currentSchema=${dBConfig.schema}"
 
   val migration: Int = {
-    val flyway = new Flyway()
-    flyway.setDataSource(dataSourceStr, null, null)
+    val flyway = new Flyway(
+      new FluentConfiguration()
+        .dataSource(dataSourceStr, dBConfig.user, dBConfig.password)
+    )
     flyway.migrate()
   }
 
   val sqlEc = ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
 
-  //val slick: SQLiteProfile.backend.DatabaseDef = Database.forURL(dataSourceStr)
-  val slick: SQLiteProfile.backend.DatabaseDef = Database.forURL(dataSourceStr, null, null, null, null, new AsyncExecutor {
-    override def executionContext: ExecutionContext = sqlEc
 
-    override def close(): Unit = ()
-  }, keepAliveConnection = true)
+  val slick: AppPostgresProfile.backend.DatabaseDef = Database.forURL(dataSourceStr, dBConfig.user, dBConfig.password, null, null, keepAliveConnection = true)
 
-  def apply(): jdbc.SQLiteProfile.backend.DatabaseDef = slick
+  def apply(): AppPostgresProfile.backend.DatabaseDef = slick
 
 }

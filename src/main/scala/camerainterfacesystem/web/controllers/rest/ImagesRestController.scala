@@ -1,6 +1,6 @@
 package camerainterfacesystem.web.controllers.rest
 
-import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 import akka.actor.ActorSystem
@@ -41,8 +41,8 @@ class ImagesRestController @Inject()(
     }
   } ~ path("images") {
     parameters(
-      Symbol("min").as(Unmarshallers.instantUnmarshaller),
-      Symbol("max").as(Unmarshallers.instantUnmarshaller) ? Instant.now(),
+      Symbol("min").as(Unmarshallers.offsetUnmarshaller),
+      Symbol("max").as(Unmarshallers.offsetUnmarshaller) ? OffsetDateTime.now(),
       Symbol("granulation").as[Int] ? 1,
       Symbol("presets").as(Unmarshallers.seqIntUnmarshaller),
       Symbol("hours").as(Unmarshallers.seqIntUnmarshaller),
@@ -60,10 +60,10 @@ class ImagesRestController @Inject()(
     }
   } ~ pathPrefix("images" / "countFrom") {
     path(Segment / LongNumber) { (timeTypeString, count) =>
-      val max = Instant.now().plus(1, ChronoUnit.DAYS)
+      val max = OffsetDateTime.now().plus(1, ChronoUnit.DAYS)
       val min = {
         val timeType = ChronoUnit.valueOf(timeTypeString.toUpperCase)
-        Instant.now().minus(count, timeType)
+        OffsetDateTime.now().minus(count, timeType)
       }
       parameter('msgOnEmpty.as[Boolean] ? false) { msgOnEmpty =>
         restFutureComplete(
@@ -78,9 +78,7 @@ class ImagesRestController @Inject()(
     parameter(
       'dates.as(Unmarshallers.commaSeparatedEpochDates)
     ) { dates =>
-      handleFutureError(onComplete(imagesRepository.getClosestImagesToDates(dates.toList, preset))) {
-        a => restComplete(a)
-      }
+      ???
     }
   } ~ path("preview") {
     handleFutureError(onComplete(imagesService.getPreview()))(restComplete)

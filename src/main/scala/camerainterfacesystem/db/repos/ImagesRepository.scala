@@ -1,6 +1,6 @@
 package camerainterfacesystem.db.repos
 
-import java.time.Instant
+import java.time.OffsetDateTime
 
 import camerainterfacesystem.db.Tables.{Image, Preset}
 import camerainterfacesystem.db.util.{Hour, PresetId}
@@ -63,7 +63,7 @@ class ImagesRepository @Inject()(
     db().run(query).map(_ => ())
   }
 
-  def deleteAllBetween(min: Instant, max: Instant, dryRun: Boolean)(implicit executionContext: ExecutionContext): Future[Seq[Image]] = {
+  def deleteAllBetween(min: OffsetDateTime, max: OffsetDateTime, dryRun: Boolean)(implicit executionContext: ExecutionContext): Future[Seq[Image]] = {
     db().run {
       images
         .filter(_.phototaken > min)
@@ -89,9 +89,9 @@ class ImagesRepository @Inject()(
     val sql =
       sql"""SELECT i1.*, presets.*
         FROM images i1
-        LEFT JOIN images i2 ON i1.presetId == i2.presetId AND i1.photoTaken < i2.photoTaken AND i1.hourTaken = i2.hourTaken
-        LEFT JOIN presets ON i1.presetId == presets.id
-        WHERE i2.presetId IS NULL AND i1.hourTaken = $hour""".as[(Image, Preset)]
+        LEFT JOIN images i2 ON i1.preset_id = i2.preset_id AND i1.photo_taken < i2.photo_taken AND i1.hour_taken = i2.hour_taken
+        LEFT JOIN presets ON i1.preset_id = presets.id
+        WHERE i2.preset_id IS NULL AND i1.hour_taken = $hour""".as[(Image, Preset)]
 
     db().run(sql)
   }
@@ -101,17 +101,17 @@ class ImagesRepository @Inject()(
     val sql =
       sql"""SELECT i1.*, presets.*
     FROM images i1
-    LEFT JOIN images i2 ON i1.presetId == i2.presetId AND i1.photoTaken < i2.photoTaken
-    LEFT JOIN presets ON i1.presetId == presets.id
-    WHERE i2.presetId IS NULL""".as[(Image, Preset)]
+    LEFT JOIN images i2 ON i1.preset_id = i2.preset_id AND i1.photo_taken < i2.photo_taken
+    LEFT JOIN presets ON i1.preset_id = presets.id
+    WHERE i2.preset_id IS NULL""".as[(Image, Preset)]
 
     db().run(sql)
   }
 
   def getImagesForPresetAndHour(
     presetId: PresetId, hour: Hour,
-    min: Option[Instant] = None,
-    max: Option[Instant] = None)
+    min: Option[OffsetDateTime] = None,
+    max: Option[OffsetDateTime] = None)
     (implicit executionContext: ExecutionContext): Future[(Preset, Seq[Image])] = {
     presetsRepository.getPresetById(presetId).flatMap {
       case None => throw new IllegalStateException("Unknown preset id")
@@ -135,7 +135,7 @@ class ImagesRepository @Inject()(
     }
   }
 
-  def findImages(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
+  def findImages(presets: Set[Int], hours: Set[Int], min: OffsetDateTime, max: OffsetDateTime, granulation: Int)(implicit executionContext: ExecutionContext): Future[Seq[(Image, Preset)]] = {
     val queries = for {
       preset <- presets
       hour <- hours
@@ -144,7 +144,7 @@ class ImagesRepository @Inject()(
       .map(_.flatten)
   }
 
-  def findImagesCount(presets: Set[Int], hours: Set[Int], min: Instant, max: Instant, granulation: Int)(implicit executionContext: ExecutionContext): Future[Int] = {
+  def findImagesCount(presets: Set[Int], hours: Set[Int], min: OffsetDateTime, max: OffsetDateTime, granulation: Int)(implicit executionContext: ExecutionContext): Future[Int] = {
     if (granulation < 0) {
       val queries = for {
         preset <- presets
@@ -169,7 +169,7 @@ class ImagesRepository @Inject()(
     }
   }
 
-  private def prepareFindImages(preset: Int, hour: Int, min: Instant, max: Instant) = {
+  private def prepareFindImages(preset: Int, hour: Int, min: OffsetDateTime, max: OffsetDateTime) = {
     imageJoinPreset
       .filter(_._1.presetid === preset)
       .filter(_._1.hourTaken === hour)
@@ -177,7 +177,7 @@ class ImagesRepository @Inject()(
       .filter(_._1.phototaken <= max)
   }
 
-  private def findImages(preset: Int, hour: Int, min: Instant, max: Instant, granulation: Int)
+  private def findImages(preset: Int, hour: Int, min: OffsetDateTime, max: OffsetDateTime, granulation: Int)
     (implicit executionContext: ExecutionContext) = {
 
     val base = prepareFindImages(preset, hour, min, max)
@@ -196,21 +196,6 @@ class ImagesRepository @Inject()(
 
   }
 
-  def getClosestImagesToDates(dates: List[Instant], preset: Int)(implicit executionContext: ExecutionContext)
-  : Future[List[(Instant, Option[Image])]] = {
-    val queries = dates.map { date =>
-      val dateEpochMillis = date.toEpochMilli
-      sql"""
-        SELECT *
-        FROM images
-        WHERE presetId = $preset
-        ORDER BY abs(photoTaken - $dateEpochMillis) ASC
-        LIMIT 1;
-      """.as[Image].headOption.map(image => date -> image)
-    }
-
-    db().run(DBIO.sequence(queries).transactionally)
-  }
 
   def getAvailableHours(): Future[Seq[Int]] = {
     db().run(
@@ -218,7 +203,7 @@ class ImagesRepository @Inject()(
     )
   }
 
-  def getEarliestDate(): Future[Option[Instant]] = {
+  def getEarliestDate(): Future[Option[OffsetDateTime]] = {
     db().run(images
       .map(_.phototaken)
       .sortBy(_.asc)
@@ -226,7 +211,7 @@ class ImagesRepository @Inject()(
       .result.headOption)
   }
 
-  def getLatestDate(): Future[Option[Instant]] = {
+  def getLatestDate(): Future[Option[OffsetDateTime]] = {
     db().run(images
       .map(_.phototaken)
       .sortBy(_.desc)
@@ -234,7 +219,7 @@ class ImagesRepository @Inject()(
       .result.headOption)
   }
 
-  def countImagesBetweenDates(min: Instant, max: Instant): Future[Int] = {
+  def countImagesBetweenDates(min: OffsetDateTime, max: OffsetDateTime): Future[Int] = {
     db().run(images
       .filter(_.phototaken > min)
       .filter(_.phototaken < max)

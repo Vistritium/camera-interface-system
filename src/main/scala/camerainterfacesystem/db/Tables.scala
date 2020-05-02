@@ -1,11 +1,11 @@
 package camerainterfacesystem.db
 
 import java.sql.Timestamp
-import java.time.Instant
+import java.time.{Instant, OffsetDateTime}
 
 import slick.ast.BaseTypedType
 import slick.jdbc.{GetResult, JdbcType}
-import slick.jdbc.SQLiteProfile.api._
+import camerainterfacesystem.db.AppPostgresProfile.api._
 import slick.model.ForeignKeyAction
 
 object Tables {
@@ -19,7 +19,7 @@ object Tables {
     timestampToInstant
   )
 
-  case class Image(id: Int, fullpath: String, filename: String, phototaken: Instant, presetid: Int, hourTaken: Int)
+  case class Image(id: Int, fullpath: String, filename: String, phototaken: OffsetDateTime, presetid: Int, hourTaken: Int)
 
   class Images(_tableTag: Tag) extends Table[Image](_tableTag, "images") {
     def * = (id, fullpath, filename, phototaken, presetid, hourTaken) <> (Image.tupled, Image.unapply)
@@ -27,16 +27,22 @@ object Tables {
     def ? = (id, Rep.Some(fullpath), Rep.Some(filename), Rep.Some(phototaken), Rep.Some(presetid), Rep.Some(hourTaken)).shaped.<>({ r => import r._; _2.map(_ => Image.tupled((_1, _2.get, _3.get, _4.get, _5.get, _6.get))) }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
 
     val id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
-    val fullpath: Rep[String] = column[String]("fullpath")
-    val filename: Rep[String] = column[String]("filename")
-    val phototaken: Rep[Instant] = column[Instant]("photoTaken")
-    val presetid: Rep[Int] = column[Int]("presetId")
-    val hourTaken: Rep[Int] = column[Int]("hourTaken")
+    val fullpath: Rep[String] = column[String]("full_path")
+    val filename: Rep[String] = column[String]("file_name")
+    val phototaken: Rep[OffsetDateTime] = column[OffsetDateTime]("photo_taken")
+    val presetid: Rep[Int] = column[Int]("preset_id")
+    val hourTaken: Rep[Int] = column[Int]("hour_taken")
 
     lazy val presetsFk = foreignKey("presets_FK_1", Rep.Some(presetid), Presets)(r => r.id, onUpdate = ForeignKeyAction.NoAction, onDelete = ForeignKeyAction.NoAction)
   }
 
-  implicit val getImageResult: GetResult[Image] = GetResult(r => Image(r.<<, r.<<, r.<<, r.nextTimestamp(), r.<<, r.<<))
+
+  implicit val getTzTimestamp: GetResult[OffsetDateTime] = GetResult(r => {
+    val ret = date2TzTimestampTypeMapper.getValue(r.rs, r.currentPos + 1)
+    r.skip
+    ret
+  })
+  implicit val getImageResult: GetResult[Image] = GetResult(r => Image(r.<<, r.<<, r.<<, r.<<[OffsetDateTime], r.<<, r.<<))
 
   lazy val Images = new TableQuery(tag => new Images(tag))
 
@@ -55,7 +61,7 @@ object Tables {
 
     val id: Rep[Int] = column[Int]("id", O.PrimaryKey, O.AutoInc)
     val name: Rep[String] = column[String]("name")
-    val displayname: Rep[Option[String]] = column[Option[String]]("displayName")
+    val displayname: Rep[Option[String]] = column[Option[String]]("display_name")
   }
 
   implicit val getPresetResult: GetResult[Preset] = GetResult(r => Preset(r.<<, r.<<, r.<<))
