@@ -183,7 +183,10 @@ class ImagesRepository @Inject()(
     val base = prepareFindImages(preset, hour, min, max)
 
     if (granulation < 0) {
-      (base.sortBy(_._1.phototaken.asc).take(1) unionAll base.sortBy(_._1.phototaken.desc).take(1)).result
+      for {
+       min <- base.sortBy(_._1.phototaken.asc).take(1).result
+       max <-  base.sortBy(_._1.phototaken.desc).take(1).result
+      } yield min ++ max
     } else {
       base
         .result
