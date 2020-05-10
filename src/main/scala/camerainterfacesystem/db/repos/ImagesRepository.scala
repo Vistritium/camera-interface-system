@@ -184,16 +184,19 @@ class ImagesRepository @Inject()(
 
     if (granulation < 0) {
       for {
-       min <- base.sortBy(_._1.phototaken.asc).take(1).result
-       max <-  base.sortBy(_._1.phototaken.desc).take(1).result
+        min <- base.sortBy(_._1.phototaken.asc).take(1).result
+        max <- base.sortBy(_._1.phototaken.desc).take(1).result
       } yield min ++ max
     } else {
       base
         .result
         .map { r =>
-          val sorted = r.sortBy(_._1.phototaken)
-          val effectiveGranulation = if (granulation == 0) 1 else granulation
-          (sorted.grouped(effectiveGranulation).map(_.head).toSet + r.head + r.last).toSeq.sortBy(_._1.phototaken)
+          if (r.isEmpty) r
+          else {
+            val sorted = r.sortBy(_._1.phototaken)
+            val effectiveGranulation = if (granulation == 0) 1 else granulation
+            (sorted.grouped(effectiveGranulation).map(_.head).toSet + r.head + r.last).toSeq.sortBy(_._1.phototaken)
+          }
         }
     }
 
