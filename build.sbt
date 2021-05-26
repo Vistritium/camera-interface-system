@@ -36,7 +36,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.3.2",
   "com.typesafe.slick" %% "slick-hikaricp" % "3.3.2",
   "com.github.tminglei" %% "slick-pg" % "0.19.0",
-  "org.apache.commons" % "commons-imaging" % "1.0-R1534292",
+  "org.apache.commons" % "commons-imaging" % "1.0-alpha2",
   "com.github.ben-manes.caffeine" % "caffeine" % "2.5.5",
   "com.github.blemale" %% "scaffeine" % "4.0.0",
   "com.squareup.okhttp3" % "okhttp" % "3.10.0",
